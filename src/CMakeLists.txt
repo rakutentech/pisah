@@ -1,0 +1,11 @@
+add_library(berpecah STATIC berpecah.cpp)
+target_link_libraries(berpecah ${EXT_LIBS})
+set_target_properties(berpecah PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+set_target_properties(berpecah PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+if (STANDALONE_COMPILE)
+  add_executable(berpecah-bin main.cpp)
+  target_link_libraries(berpecah-bin berpecah)
+  set_target_properties(berpecah-bin PROPERTIES OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+  set_target_properties(berpecah-bin PROPERTIES OUTPUT_NAME "${CMAKE_BINARY_DIR}/berpecah")
+endif(STANDALONE_COMPILE)
