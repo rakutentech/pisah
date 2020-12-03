@@ -1,11 +1,14 @@
-#include<memory>
-#include<string>
-#include<vector>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
 
-#include<pcrecpp.h>
+class Berpecah {
+private:
+  const std::string lang_;
 
-class Berpecah{
-    public:
-        Berpecah();
-        std::vector<std::string_view> segment(std::string_view);
+public:
+  Berpecah(const std::string &);
+  std::vector<std::string_view> segment(std::string_view);
 };

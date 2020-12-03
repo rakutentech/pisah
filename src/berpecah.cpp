@@ -1,19 +1,28 @@
-#include<iostream>
-#include<memory>
-#include<string>
-#include<string_view>
-#include<vector>
-#include<pcrecpp.h>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include <pcrecpp.h>
 
 #include "berpecah.hpp"
+#include "processor.hpp"
 
-Berpecah::Berpecah(){
-    std::cout << "Object Creater" << std::endl ; 
+Berpecah::Berpecah(const std::string &lang) : lang_(lang) {
+  std::cout << "Object Created" << std::endl;
 }
 
-std::vector<std::string_view> Berpecah::segment(std::string_view inputText){
-    std::vector<std::string_view> strPieces;
-    strPieces.push_back(inputText);
-    strPieces.push_back(inputText);
-    return strPieces;
+// function to segment
+std::vector<std::string_view> Berpecah::segment(std::string_view input_text) {
+
+  // processor object
+  Processor processor(input_text, lang_);
+
+  std::vector<std::string_view> str_pieces;
+
+  // process function
+  str_pieces = processor.process();
+
+  return str_pieces;
 };
