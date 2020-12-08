@@ -5,6 +5,6 @@
 
 class Utils {
 public:
-  static pcrecpp::StringPiece strview_to_strpiece(std::string_view);
-  static std::string_view strpiece_to_strview(pcrecpp::StringPiece);
+  static pcrecpp::StringPiece to_strpiece(std::string_view);
+  static std::string_view from_strpiece(pcrecpp::StringPiece);
 };

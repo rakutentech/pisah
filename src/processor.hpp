@@ -1,23 +1,25 @@
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include <pcrecpp.h>
 
+#include "langrules/rules.hpp"
+
 class Processor {
 
 private:
-  std::string_view text_; // original text to be processed
-  const std::string
-      lang_; // 2-letter ISO code of the language, e.g. en, zh, ja e3t
-
+  std::string text_; // original text to be processed
+  std::string lang_; // 2-letter ISO code of the language
+  std::unique_ptr<Rules> rules_;
 public:
-  Processor(std::string_view, const std::string &);
+  // Constructor that takes in the text to process and the language code.
+  Processor(std::string, const std::string &);
 
-  static pcrecpp::RE_Options options;
+  // PCRE options object
+  static pcrecpp::RE_Options options_;
 
-  // regexes
-  static const pcrecpp::RE re_fullstop;
-
-  std::vector<std::string_view> process();
+  std::vector<std::string> process();
+  
 };

@@ -1,9 +1,9 @@
 #include <iostream>
-#include <memory>
-#include <pcrecpp.h>
 #include <string>
 #include <string_view>
 #include <vector>
+
+#include <pcrecpp.h>
 
 #include "berpecah.hpp"
 
@@ -11,10 +11,20 @@ int main(int argc, char *argv[]) {
 
   std::string lang = "en";
   Berpecah b(lang);
-  std::string sample = "This is a sample text. Hello World.";
-  std::string_view sv = sample;
-  auto pieces = b.segment(sv);
-  for (auto piece : pieces) {
-    std::cout << "hi" << piece << std::endl;
+
+  std::string text;
+  std::string line;
+  text.reserve(10000);
+
+  while (std::getline(std::cin, line) && ! std::cin.eof() ){
+    if (!text.empty()){
+      text += "\n";
+    }
+    text += line;
   }
+  auto pieces = b.segment(text);
+  for (int i=0; i < pieces.size(); i++){
+    std::cout << i << " ||| " << pieces[i] << std::endl;
+  }
+
 };
