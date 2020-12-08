@@ -1,7 +1,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <string_view>
 #include <vector>
 
 class Berpecah {
@@ -10,5 +9,5 @@ private:
 
 public:
   Berpecah(const std::string &);
-  std::vector<std::string_view> segment(std::string_view);
+  std::vector<std::string> segment(std::string);
 };
