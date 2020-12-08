@@ -1,4 +1,6 @@
-add_library(berpecah STATIC berpecah.cpp processor.cpp utils.cpp)
+file(GLOB LANGRULES_SOURCES "langrules/*pp")
+
+add_library(berpecah STATIC berpecah.cpp processor.cpp utils.cpp ${LANGRULES_SOURCES})
 target_link_libraries(berpecah ${EXT_LIBS})
 set_target_properties(berpecah PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 set_target_properties(berpecah PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
