@@ -7,12 +7,9 @@
 #include "rules.hpp"
 
 class EnglishRules : public Rules {
-  public:
-    // constructor
-    EnglishRules(){
+public:
+  // constructor
+  EnglishRules(){
 
-
-    };
-    
+  };
 };
-
