@@ -13,7 +13,10 @@ private:
   std::string text_; // original text to be processed
   std::string lang_; // 2-letter ISO code of the language
   std::unique_ptr<Rules> rules_;
+
 public:
+  bool debug_; // debug flag
+
   // Constructor that takes in the text to process and the language code.
   Processor(std::string, const std::string &);
 
@@ -21,5 +24,4 @@ public:
   static pcrecpp::RE_Options options_;
 
   std::vector<std::string> process();
-  
 };
