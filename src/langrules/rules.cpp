@@ -9,6 +9,7 @@
 
 #include <pcrecpp.h>
 
+#include "../utils.hpp"
 #include "english_rules.hpp"
 #include "rules.hpp"
 
@@ -44,6 +45,9 @@ Rules::Rules() {
   // Constants
   eos_punct = "[\\!\\?\\.]";
   eos = "" + eos + "|\\n|\\r|\\z";
+
+  // use ∯ if you already have . in your abbreviation.
+
   prepositive_abbrev =
       "adm|attys|brig|capt|cmdr|col|cpl|det|dr|gen|gov|ing|lt|maj|mr|mrs|ms|mt|"
       "messrs|mssrs|prof|ph|rep|reps|rev|sen|sens|sgt|st|supt|v|vs|fig";
@@ -53,7 +57,8 @@ Rules::Rules() {
       "bart|bld|bldg|blvd|brig|bros|btw|cal|calif|capt|cl|cmdr|co|col|colo|"
       "comdr|con|conn|corp|cpl|cres|ct|d\\.phil|dak|dec|del|dept|det|dist|dr|"
       "dr\\.phil|dr\\.philos|drs|e\\.g|ens|esp|esq|etc|exp|expy|ext|feb|fed|"
-      "fla|ft|fwy|fy|ga|gen|gov|hon|hosp|hr|hway|hwy|i.e|ia|id|ida|ill|inc|ind|"
+      "fla|ft|fwy|fy|ga|gen|gov|hon|hosp|hr|hway|hwy|i\\.e|ia|id|ida|ill|inc|"
+      "ind|"
       "ing|insp|is|jan|jr|jul|jun|kan|kans|ken|ky|la|lt|ltd|maj|man|mar|mass|"
       "may|md|me|med|messrs|mex|mfg|mich|min|minn|miss|mlle|mm|mme|mo|mont|mr|"
       "mrs|ms|msgr|mssrs|mt|mtn|neb|nebr|nev|no|nos|nov|nr|oct|ok|okla|ont|op|"
@@ -61,6 +66,9 @@ Rules::Rules() {
       "rs|ref|rep|reps|res|rev|rt|sask|sec|sen|sens|sep|sept|sfc|sgt|sr|st|"
       "supt|surg|tce|tenn|tex|univ|usafa|u\\.s|ut|va|v|ver|viz|vs|vt|wash|wis|"
       "wisc|wy|wyo|yuk|fig";
+  sent_starters =
+      "a|being|did|for|he|how|however|i|in|it|millions|more|she|that|the"
+      "there|they|we|what|when|where|who|why";
   debug_ = true;
 
   // Replacement Regexes
@@ -74,12 +82,12 @@ Rules::Rules() {
   // http://rubular.com/r/e3H6kwnr6H --> Example: ^Q. This --> Q∯ This
   rule_map_.emplace(
       "SingleUpperCaseLetterAtStartOfLineRule",
-      std::make_unique<Rule>(Rule("(?<=^[A-Z])\\.(?=\\s)", u8"∯", options())));
+      std::make_unique<Rule>(Rule("(?<=^[A-Z])\\.(?=\\s)", u8"∯")));
 
   // http://rubular.com/r/gitvf0YWH4 --> Example: ^Q. This --> Q∯ This
-  rule_map_.emplace("SingleUpperCaseLetterRule",
-                    std::make_unique<Rule>(
-                        Rule("(?<=\\s[A-Z])\\.(?=\\s)", u8"∯", options())));
+  rule_map_.emplace(
+      "SingleUpperCaseLetterRule",
+      std::make_unique<Rule>(Rule("(?<=\\s[A-Z])\\.(?=\\s)", u8"∯")));
 
   // https://regex101.com/r/VhPPOT/2/ --> preceeded by space or at the start of
   // the string,  followed by uppercase char, space, or ":[0-9]+"
@@ -87,7 +95,7 @@ Rules::Rules() {
       "PrepositiveAbbreviationRule",
       std::make_unique<Rule>(Rule("((?:\\A|\\s)(?:" + prepositive_abbrev +
                                       "))\\.((?-i)[[:upper:]]|\\s|:\\d+)",
-                                  u8"\\1∯\\2", options().set_caseless(true))));
+                                  u8"\\1∯\\2", Options().set_caseless(true))));
 
   // https://regex101.com/r/eCgMwp/1// --> preceeded by space or at the start of
   // the string, followed by number, or "\s*("
@@ -95,7 +103,7 @@ Rules::Rules() {
       "NumberAbbreviationRule",
       std::make_unique<Rule>(
           Rule("((?:\\A|\\s)(?:" + number_abbrev + "))\\.(\\s*(\\d|\\())",
-               u8"\\1∯\\2", options().set_caseless(true))));
+               u8"\\1∯\\2")));
 
   // https://regex101.com/r/5eZc0s/2/ --> preceeded by space or at the start of
   // the string, followed by ?,.:
@@ -104,12 +112,94 @@ Rules::Rules() {
       std::make_unique<Rule>(Rule(
           "((?:\\A|\\s)(?:" + abbrev +
               "))\\.((\\.|\\:|-|\\?|\\,)|(\\s([a-z]|I\\s|I'm|I'll|\\d|\\()))",
-          u8"\\1∯\\2", options())));
+          u8"\\1∯\\2")));
+
+  // https://regex101.com/r/wR4fJ6/17 : A period(.) preceeded by .[a-z] or
+  // \b[a-z] and followed by [a-z]. or [a-z]\b or a space followed by a non
+  // uppercase character.
+  rule_map_.emplace("LetterPeriodAbbreviationRule",
+                    std::make_unique<Rule>(Rule(
+                        "(?<=\\.[a-z]|\\b[a-z])\\.(?=[a-z]\\.|[a-z]\\b|\\s)",
+                        "∯", Options().set_caseless(true))));
+
+  // https://regex101.com/r/lOiT5h/1/. A.m. and
+  rule_map_.emplace(
+      "AmPmAbbreviationRule",
+      std::make_unique<Rule>(Rule("(?<= [APap]∯[Mm])∯(?=\\s\\p{Lu})", ".")));
+
+  // https://regex101.com/r/TerB5D/2/: few abbreviations followed by usual
+  // sentence starters (default=English)
+  rule_map_.emplace(
+      "AbbreviationSentStarterRule",
+      std::make_unique<Rule>(
+          Rule("(U∯S|U\\.S|U∯K|E∯U|E\\.U|U∯S∯A|U\\.S\\.A|I|i.v)∯(?=\\s+(" +
+                   sent_starters + ")\\b)",
+               "\\1.", Options().set_caseless(true))));
+
+  // NUMBER RULES
+  // https://regex101.com/r/AizR2R/1/ --> e.g. 3.14 --> 3∯1.4
+  rule_map_.emplace("PeriodBeforeNumberRule",
+                    std::make_unique<Rule>(Rule("\\.(\\d)", u8"∯\\1")));
+
+  // https://regex101.com/r/PtrPu6/2/
+  rule_map_.emplace("NumberAfterPeriodBeforeLetterRule",
+                    std::make_unique<Rule>(Rule("(\\d)\\.(\\S)", u8"\\1∯\\2")));
+
+  // https://regex101.com/r/PtrPu6/4/: numbering lists of upto 3 digits
+  // (starting of the line)
+  rule_map_.emplace("NewLineNumberPeriodSpaceLetterRule",
+                    std::make_unique<Rule>(Rule(
+                        "((?:\\n|\\A)\\d{1,3})\\.(\\s*\\S)", u8"\\1∯\\2")));
+
+  // punct rules
+  rule_map_.emplace("PeriodRule", std::make_unique<Rule>(Rule("\\.", u8"∯")));
+  rule_map_.emplace("PeriodRevertRule",
+                    std::make_unique<Rule>(Rule("∯", "\\.")));
 
   // Other Regexes
-  rule_map_.emplace("NewLine", std::make_unique<Rule>(
-                                   Rule("([^\\.]+.(\\n|\\z))\\s*", options())));
+  rule_map_.emplace("NewLineRegex",
+                    std::make_unique<Rule>(Rule("([^\\.]+(?:\\n|\\z))\\s*")));
 };
+
+// Rule functions which can be overridden in specific language classes
+void Rules::ApplyAbbreviationReplacements(std::string &text) {
+  ApplyReplace(text, "PossessiveAbbreviationRule",
+               "SingleUpperCaseLetterAtStartOfLineRule",
+               "SingleUpperCaseLetterRule", "PrepositiveAbbreviationRule",
+               "NumberAbbreviationRule", "AbbreviationRule",
+               "LetterPeriodAbbreviationRule", "AmPmAbbreviationRule",
+               "AbbreviationSentStarterRule");
+};
+
+// function to replace periods within numbers
+void Rules::ApplyNumberReplacements(std::string &text) {
+  ApplyReplace(text, "PeriodBeforeNumberRule",
+               "NumberAfterPeriodBeforeLetterRule",
+               "NewLineNumberPeriodSpaceLetterRule");
+};
+
+// function to replace continuous period abbreviations e.g. U.S.A, I.T. etc.
+// TODO: remove. has been replaced with a regex substitution.
+// void Rules::ApplyMultiPeriodReplacement(std::string &text) {
+//   pcrecpp::StringPiece text_sp = Utils::to_strpiece(text);
+//   std::string piece;
+//   const auto before = std::chrono::system_clock::now();
+//   std::string rule_name = "MultiPeriodAbbreviationRegex" ;
+//   while (pcrecpp::RE("(\\b[a-z]\\.)").FindAndConsume(&text_sp, &piece)) {
+//     std::cerr <<  "CC" << piece << piece.data() - text_sp.data() <<
+//     std::endl; ApplyReplace(piece, "PeriodRule");
+//   }
+//   const std::chrono::duration<double> duration =
+//       (std::chrono::system_clock::now() - before) * 1000;
+
+//   if (debug_ == false) {
+//     std::cerr << "After applying " << rule_name << " (took " <<
+//     duration.count()
+//               << "ms) :\n"
+//               << text << "\n"
+//               << std::endl; // DEBUG
+//   }
+// };
 
 std::map<std::string, std::function<std::unique_ptr<Rules>()>>
     Rules::lang_map_ = []() {
@@ -118,12 +208,15 @@ std::map<std::string, std::function<std::unique_ptr<Rules>()>>
       return lang_map;
     }();
 
-std::unique_ptr<Rules> Rules::CreateLangRules(std::string &lang) {
+std::unique_ptr<Rules> Rules::CreateLangRules(std::string &lang, bool debug) {
   std::unique_ptr<Rules> rules = Rules::lang_map_[lang]();
+  rules->debug_ = debug;
   return rules;
 };
 
-pcrecpp::RE_Options &Rules::options() { return Rules::options_; };
+// Getter function that returns a copy of the options object to enable
+// modification of the preset flags.
+pcrecpp::RE_Options Rules::Options() { return Rules::options_; };
 
 std::shared_ptr<Rule> Rules::GetRule(std::string rule_name) {
   if (!rule_map_.count(rule_name) > 0) {
@@ -137,7 +230,7 @@ pcrecpp::RE Rules::GetRuleRegex(std::string rule_name) {
   return rule->Regex();
 };
 
-void Rules::ApplyReplace(std::string rule_name, std::string &text) {
+void Rules::ApplyReplace(std::string &text, std::string rule_name) {
   const auto before = std::chrono::system_clock::now();
   GetRule(rule_name)->Replace(text);
   const std::chrono::duration<double> duration =

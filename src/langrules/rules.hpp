@@ -25,16 +25,17 @@ public:
 };
 
 class Rules {
-private:
+
+public:
   std::string eos_punct;
   std::string eos;
   std::string prepositive_abbrev;
   std::string number_abbrev;
   std::string abbrev;
+  std::string sent_starters;
 
   std::map<string, std::shared_ptr<Rule>> rule_map_;
 
-public:
   Rules();
 
   bool debug_;
@@ -46,12 +47,24 @@ public:
       lang_map_;
   void static CreateLangRulesMap();
 
-  static std::unique_ptr<Rules> CreateLangRules(string &);
+  static std::unique_ptr<Rules> CreateLangRules(string &lang, bool debug);
 
-  pcrecpp::RE_Options &options();
+  pcrecpp::RE_Options Options();
   std::shared_ptr<Rule> GetRule(std::string rule_name);
   pcrecpp::RE GetRuleRegex(std::string rule_name);
-  void ApplyReplace(std::string rule_name, std::string &text);
+
+  void ApplyReplace(std::string &text, std::string rule_name);
+
+  // template function to allow arbitrary number of rulenames to be passed and
+  // applied one after the other.
+  template <typename... T>
+  void ApplyReplace(std::string &text, std::string rule_name, T... rule_names) {
+    ApplyReplace(text, rule_name);
+    ApplyReplace(text, rule_names...);
+  }
+
+  virtual void ApplyAbbreviationReplacements(std::string &text);
+  virtual void ApplyNumberReplacements(std::string &text);
 };
 
 #endif
