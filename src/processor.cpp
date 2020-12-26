@@ -13,9 +13,8 @@
 
 Processor::Processor(std::string text, const std::string &lang)
     : text_(text), lang_(lang) {
-  rules_ = Rules::CreateLangRules(lang_);
   debug_ = true;
-  rules_->debug_ = true;
+  rules_ = Rules::CreateLangRules(lang_, debug_);
 };
 
 pcrecpp::RE_Options Processor::options_ = pcrecpp::RE_Options(PCRE_UTF8);
@@ -38,36 +37,19 @@ std::vector<std::string> Processor::process() {
 
   // std::cout << "before" << text_ << std::endl;
   // pcrecpp::RE("\n").GlobalReplace("ABC", &text_) ;
-  rules_->ApplyReplace("NewlineRule", text_);
+  rules_->ApplyReplace(text_, "NewlineRule");
 
   // (A) TODO: list replacement
 
   // (B) abbreviation replacement
+  rules_->ApplyAbbreviationReplacements(text_);
 
-  // (1) Possessive Abbrevation: Jr.'s
-  rules_->ApplyReplace("PossessiveAbbreviationRule", text_);
-
-  // (2) self.lang.KommanditgesellschaftRule (Skipped because too specific)
-  // http://rubular.com/r/NEv265G2X2
-
-  // (3) SingleUpperCaseLetterAtStartOfLineRule. Ex: Q. What is your name?
-  rules_->ApplyReplace("SingleUpperCaseLetterAtStartOfLineRule", text_);
-
-  // (4) SingleUpperCaseLetterRule. Ex: John E. Smith.
-  rules_->ApplyReplace("SingleUpperCaseLetterRule", text_);
-
-  // (5) Prepositive Abbreviation
-  rules_->ApplyReplace("PrepositiveAbbreviationRule", text_);
-
-  // (6) Number Abbreviation
-  rules_->ApplyReplace("NumberAbbreviationRule", text_);
-
-  // (7) Other Abbreviation
-  rules_->ApplyReplace("AbbreviationRule", text_);
+  // (C) number replacements
+  rules_->ApplyNumberReplacements(text_);
 
   // -- stub --
   pcrecpp::StringPiece text_sp = Utils::to_strpiece(text_);
-  while (rules_->GetRuleRegex("NewLine").FindAndConsume(&text_sp, &sent)) {
+  while (rules_->GetRuleRegex("NewLineRegex").FindAndConsume(&text_sp, &sent)) {
     str_list.push_back(sent.as_string());
   }
 
