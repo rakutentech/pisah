@@ -8,13 +8,15 @@
 #include "berpecah.hpp"
 #include "processor.hpp"
 
-Berpecah::Berpecah(const std::string &lang) : lang_(lang) {}
+Berpecah::Berpecah(const std::string &lang, bool debug)
+    : lang_(lang), debug_(debug) {}
+Berpecah::Berpecah(const std::string &lang) : lang_(lang), debug_(false) {}
 
 // function to segment
-std::vector<std::string> Berpecah::segment(std::string input_text) {
+std::vector<std::string> Berpecah::Segment(std::string text) {
 
   // processor object
-  Processor processor{input_text, lang_};
+  Processor processor{text, lang_, debug_};
 
   std::vector<std::string> str_pieces;
 
