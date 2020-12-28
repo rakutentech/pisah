@@ -65,6 +65,7 @@ public:
 
   virtual void ApplyAbbreviationReplacements(std::string &text);
   virtual void ApplyNumberReplacements(std::string &text);
+  virtual void ApplyAdditionalReplacements(std::string &text);
 };
 
 #endif

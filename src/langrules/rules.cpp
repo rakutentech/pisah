@@ -72,8 +72,9 @@ Rules::Rules() {
   debug_ = true;
 
   // Replacement Regexes
-  rule_map_.emplace("NewlineRule", std::make_unique<Rule>(Rule("\n", "\n")));
+  rule_map_.emplace("NewlineRule", std::make_unique<Rule>(Rule("\n", "\r")));
 
+  // ABBREVIATION RULES
   // http://rubular.com/r/yqa4Rit8EY --> Ex: Jr.'s --> Jr∯'s
   rule_map_.emplace(
       "PossessiveAbbreviationRule",
@@ -146,10 +147,17 @@ Rules::Rules() {
                     std::make_unique<Rule>(Rule("(\\d)\\.(\\S)", u8"\\1∯\\2")));
 
   // https://regex101.com/r/PtrPu6/4/: numbering lists of upto 3 digits
-  // (starting of the line)
+  // (covers starting of the line and upto three digits)
   rule_map_.emplace("NewLineNumberPeriodSpaceLetterRule",
                     std::make_unique<Rule>(Rule(
-                        "((?:\\n|\\A)\\d{1,3})\\.(\\s*\\S)", u8"\\1∯\\2")));
+                        "((?:\\r|\\A)\\d{1,3})\\.(\\s*\\S)", u8"\\1∯\\2")));
+
+  // ADDITIONAL RULES
+  // https://regex101.com/r/i4YWZI/2/ alphanum period alphanum (only considering
+  // lowercased), typically in  e-mails or usernames without spaces..
+  rule_map_.emplace(
+      "WithMultiplePeriodsAndEmailRule",
+      std::make_unique<Rule>(Rule("([a-z0-9_])(\\.)([a-z0-9_])", u8"\\1∮\\3")));
 
   // punct rules
   rule_map_.emplace("PeriodRule", std::make_unique<Rule>(Rule("\\.", u8"∯")));
@@ -177,6 +185,11 @@ void Rules::ApplyNumberReplacements(std::string &text) {
                "NumberAfterPeriodBeforeLetterRule",
                "NewLineNumberPeriodSpaceLetterRule");
 };
+
+// all other additional replacement rules
+void Rules::ApplyAdditionalReplacements(std::string &text) {
+  ApplyReplace(text, "WithMultiplePeriodsAndEmailRule");
+}
 
 // function to replace continuous period abbreviations e.g. U.S.A, I.T. etc.
 // TODO: remove. has been replaced with a regex substitution.
