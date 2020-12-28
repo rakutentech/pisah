@@ -11,11 +11,13 @@
 #include "processor.hpp"
 #include "utils.hpp"
 
-Processor::Processor(std::string text, const std::string &lang)
-    : text_(text), lang_(lang) {
-  debug_ = true;
+Processor::Processor(std::string text, const std::string &lang, bool debug)
+    : text_(text), lang_(lang), debug_(debug) {
   rules_ = Rules::CreateLangRules(lang_, debug_);
 };
+
+Processor::Processor(std::string text, const std::string &lang)
+    : Processor::Processor(text, lang, false) {}
 
 pcrecpp::RE_Options Processor::options_ = pcrecpp::RE_Options(PCRE_UTF8);
 
@@ -46,6 +48,9 @@ std::vector<std::string> Processor::process() {
 
   // (C) number replacements
   rules_->ApplyNumberReplacements(text_);
+
+  // (D) other replacements
+  rules_->ApplyAdditionalReplacements(text_);
 
   // -- stub --
   pcrecpp::StringPiece text_sp = Utils::to_strpiece(text_);
