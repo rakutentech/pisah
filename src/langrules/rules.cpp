@@ -46,7 +46,6 @@ Rules::Rules() {
   eos_punct = "[\\!\\?\\.]";
   eos = "" + eos + "|\\n|\\r|\\z";
 
-  // use ∯ if you already have . in your abbreviation.
 
   prepositive_abbrev =
       "adm|attys|brig|capt|cmdr|col|cpl|det|dr|gen|gov|ing|lt|maj|mr|mrs|ms|mt|"
@@ -67,8 +66,15 @@ Rules::Rules() {
       "supt|surg|tce|tenn|tex|univ|usafa|u\\.s|ut|va|v|ver|viz|vs|vt|wash|wis|"
       "wisc|wy|wyo|yuk|fig";
   sent_starters =
-      "a|being|did|for|he|how|however|i|in|it|millions|more|she|that|the"
+      "a|being|did|for|he|how|however|i|in|it|millions|more|she|that|the|"
       "there|they|we|what|when|where|who|why";
+  file_exts = 
+      "jpe?g|png|gif|tiff?|pdf|ps|docx?|xlsx?|svg|bmp|tga|exif|odt|html?|"
+      "txt|rtf|bat|sxw|xml|zip|exe|msi|blend|wmv|mp[34]|pptx?|flac|rb|cpp|cs|js";
+    
+  exclaim_words = 
+      "!Xũ|!Kung|ǃ\\ʼOǃKung|!Xuun|!Kung\\-Ekoka|ǃHu|ǃKhung|ǃKu|ǃung|ǃXo|ǃXû|ǃXung|ǃXũ"
+      "!Xun|Yahoo!|Y!|J Yum!";
   debug_ = true;
 
   // Replacement Regexes
@@ -159,12 +165,47 @@ Rules::Rules() {
       "WithMultiplePeriodsAndEmailRule",
       std::make_unique<Rule>(Rule("([a-z0-9_])(\\.)([a-z0-9_])", u8"\\1∮\\3")));
 
+  // https://regex101.com/r/6JGVof/1/. period after letter followed by degree symbol (°) followed by numbers
+  rule_map_.emplace(
+      "GeolocationRule",
+      std::make_unique<Rule>(Rule("([a-zA-Z]°)\\.(\\s*\\d+)", u8"\\1∯\\2" )));
+
+  // https://regex101.com/r/aUASgT/1/
+  rule_map_.emplace("FileFormatRule",
+      std::make_unique<Rule>(Rule("\\.(" + file_exts + ")", u8"∯\\1", Options().set_caseless(true) )));
+
+  // ELLIPSES RULES
+
+  // https://regex101.com/r/GwwKpt/1/: replace three periods with spaces and followed by lowercase.
+  rule_map_.emplace(
+      "ThreePeriodSpacesRule",
+      std::make_unique<Rule>(Rule("(\\s\\.){3}\\s", u8"∯ ∯ ∯ " )));  
+
+  // https://regex101.com/r/JXrOZG/1: replace three periods if ellipses followed by another period
+  rule_map_.emplace(
+      "FourConsecutivePeriodRule",
+      std::make_unique<Rule>(Rule("(?<=\\S)\\.{3}(?=\\.\\s\\p{Lu})", u8"∯∯∯" )));  
+
+  // https://regex101.com/r/pTlZiM/1: replace two periods in ellipses, if followed by uppercase letter.
+  rule_map_.emplace(
+      "ThreeConsecutivePeriodRule",
+      std::make_unique<Rule>(Rule("\\.\\.\\.(\\s+\\p{Lu})", u8"∯∯.\\1" )));  
+
+  // replace all three periods (only to be applied afer the previous rules.)
+  rule_map_.emplace(
+      "OtherThreePeriodRule",
+      std::make_unique<Rule>(Rule("\\.\\.\\.", u8"∯∯∯" )));  
+
   // punct rules
   rule_map_.emplace("PeriodRule", std::make_unique<Rule>(Rule("\\.", u8"∯")));
   rule_map_.emplace("PeriodRevertRule",
                     std::make_unique<Rule>(Rule("∯", "\\.")));
 
   // Other Regexes
+
+  rule_map_.emplace("ExclaimWordsRegex",
+                    std::make_unique<Rule>(Rule("Y")));
+
   rule_map_.emplace("NewLineRegex",
                     std::make_unique<Rule>(Rule("([^\\.]+(?:\\n|\\z))\\s*")));
 };
@@ -188,7 +229,14 @@ void Rules::ApplyNumberReplacements(std::string &text) {
 
 // all other additional replacement rules
 void Rules::ApplyAdditionalReplacements(std::string &text) {
-  ApplyReplace(text, "WithMultiplePeriodsAndEmailRule");
+  ApplyReplace(text, "WithMultiplePeriodsAndEmailRule",
+               "GeolocationRule",
+               "FileFormatRule");
+  ApplyReplace(text, "ThreePeriodSpacesRule",
+               "FourConsecutivePeriodRule",
+               "ThreeConsecutivePeriodRule",
+               "OtherThreePeriodRule");
+  //Utils::GlobalReplaceWithinMatch(text, GetRuleRegex("ExclaimWordsRegex"), "!", "X" );
 }
 
 // function to replace continuous period abbreviations e.g. U.S.A, I.T. etc.
