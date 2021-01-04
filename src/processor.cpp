@@ -53,7 +53,7 @@ std::vector<std::string> Processor::process() {
   rules_->ApplyAdditionalReplacements(text_);
 
   // -- stub --
-  pcrecpp::StringPiece text_sp = Utils::to_strpiece(text_);
+  pcrecpp::StringPiece text_sp = Utils::ToStringPiece(text_);
   while (rules_->GetRuleRegex("NewLineRegex").FindAndConsume(&text_sp, &sent)) {
     str_list.push_back(sent.as_string());
   }
