@@ -40,6 +40,7 @@ void Rule::Replace(std::string &text) {
   }
 }
 
+
 Rules::Rules() {
 
   // Constants
@@ -71,10 +72,10 @@ Rules::Rules() {
   file_exts = 
       "jpe?g|png|gif|tiff?|pdf|ps|docx?|xlsx?|svg|bmp|tga|exif|odt|html?|"
       "txt|rtf|bat|sxw|xml|zip|exe|msi|blend|wmv|mp[34]|pptx?|flac|rb|cpp|cs|js";
-    
-  exclaim_words = 
-      "!Xũ|!Kung|ǃ\\ʼOǃKung|!Xuun|!Kung\\-Ekoka|ǃHu|ǃKhung|ǃKu|ǃung|ǃXo|ǃXû|ǃXung|ǃXũ"
-      "!Xun|Yahoo!|Y!|J Yum!";
+
+  // TODO: Bug on  ǃʼOǃKung this word both exclamations not recognized
+  exclaim_words =  "!Xũ|!Kung|ǃʼOǃKung|!Kung-Ekoka|!Xuun|!Hu|!Khung|!Ku|!ung|!Xo|!Xû|!Xung|!Xun|Yahoo!|Y!|J Yum!";
+
   debug_ = true;
 
   // Replacement Regexes
@@ -204,10 +205,10 @@ Rules::Rules() {
   // Other Regexes
 
   rule_map_.emplace("ExclaimWordsRegex",
-                    std::make_unique<Rule>(Rule("Y")));
+                    std::make_unique<Rule>(Rule("(?<=\\s|\\A)(" + exclaim_words + ")(?=\\s|\\Z)")));
 
   rule_map_.emplace("NewLineRegex",
-                    std::make_unique<Rule>(Rule("([^\\.]+(?:\\n|\\z))\\s*")));
+                    std::make_unique<Rule>(Rule("([^\\.]+(?:\\n|\\Z))\\s*")));
 };
 
 // Rule functions which can be overridden in specific language classes
@@ -236,7 +237,7 @@ void Rules::ApplyAdditionalReplacements(std::string &text) {
                "FourConsecutivePeriodRule",
                "ThreeConsecutivePeriodRule",
                "OtherThreePeriodRule");
-  //Utils::GlobalReplaceWithinMatch(text, GetRuleRegex("ExclaimWordsRegex"), "!", "X" );
+  ApplyReplaceWithinMatch(text, "ExclaimWordsRegex", "!", "&ᓴ&");
 }
 
 // function to replace continuous period abbreviations e.g. U.S.A, I.T. etc.
@@ -294,6 +295,20 @@ pcrecpp::RE Rules::GetRuleRegex(std::string rule_name) {
 void Rules::ApplyReplace(std::string &text, std::string rule_name) {
   const auto before = std::chrono::system_clock::now();
   GetRule(rule_name)->Replace(text);
+  const std::chrono::duration<double> duration =
+      (std::chrono::system_clock::now() - before) * 1000;
+
+  if (debug_ == true) {
+    std::cerr << "After applying " << rule_name << " (took " << duration.count()
+              << "ms) :\n"
+              << text << "\n"
+              << std::endl; // DEBUG
+  }
+}
+
+void Rules::ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::string pat, std::string repl) {
+  const auto before = std::chrono::system_clock::now();
+  Utils::GlobalReplaceWithinMatch(text, GetRuleRegex(rule_name), "!", u8"&ᓴ&" );
   const std::chrono::duration<double> duration =
       (std::chrono::system_clock::now() - before) * 1000;
 

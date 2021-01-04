@@ -65,6 +65,9 @@ public:
     ApplyReplace(text, rule_names...);
   }
 
+  // TODO: support regex pat. now only string patterns are supported
+  void ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::string pat, std::string repl);
+
   virtual void ApplyAbbreviationReplacements(std::string &text);
   virtual void ApplyNumberReplacements(std::string &text);
   virtual void ApplyAdditionalReplacements(std::string &text);
