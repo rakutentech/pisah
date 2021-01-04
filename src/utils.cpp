@@ -16,26 +16,45 @@ std::string_view Utils::FromStringPiece(pcrecpp::StringPiece text_sp) {
   return text_sv;
 }
 
-void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::string pat, std::string repl){
-  pcrecpp::StringPiece text_sp = Utils::ToStringPiece("WHat?");
+void Utils::FindAndReplaceAll(std::string &text, std::string orig, std::string repl)
+{
+    size_t pos = text.find(orig);
+    while( pos != std::string::npos)
+    {
+        text.replace(pos, orig.size(), repl);
+        pos =text.find(orig, pos + repl.size());
+    }
+}
+
+void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::string orig, std::string repl){
+  pcrecpp::StringPiece text_sp = pcrecpp::StringPiece(text);
   std::string piece;
-  std::cerr << "WHAT" << std::endl  ;
+  std::string out;
   // const auto before = std::chrono::system_clock::now();
   // std::string rule_name = "MultiPeriodAbbreviationRegex" ;
-  //reinterpret_cast<pcrecpp::StringPiece*>(&text)
-  while (pcrecpp::RE("a").FindAndConsume(&text_sp, &piece))  {
-    std::cerr << "Hey" ;
-    std::cerr << "CC" << piece ;
-     //std::endl; ApplyReplace(piece, "PeriodRule");
-   }
-  //   const std::chrono::duration<double> duration =
-  //       (std::chrono::system_clock::now() - before) * 1000;
-
-  //   if (debug_ == false) {
-  //     std::cerr << "After applying " << rule_name << " (took " <<
-  //     duration.count()
-  //               << "ms) :\n"
-  //               << text << "\n"
-  //               << std::endl; // DEBUG
-  //   }
+  size_t end = text.length();
+  size_t cur = 0;
+  
+  int ngroups = 16;
+  int consumed;
+  const pcrecpp::Arg* args[16];
+  pcrecpp::Arg argpiece(&piece);
+  //args[0] =  reinterpret_cast<pcrecpp::Arg*>(&piece);
+  args[0] = &argpiece;
+  bool matched = true;
+  while (matched){
+    matched = re.DoMatch(text_sp, pcrecpp::RE::UNANCHORED, &consumed, args, 1);
+    if (!matched){
+      break;
+    }
+    out.append(text, cur, consumed - piece.length());
+    FindAndReplaceAll(piece, orig, repl);
+    out.append(piece);
+    cur += consumed;
+    std::cerr << consumed << text_sp << "A" << piece << std::endl;
+    text_sp.remove_prefix(consumed);
+    //std::cerr << "\nOUT" << out <<std::endl;
+  }
+  out.append(text, cur, text.length() - cur );
+  std::swap(text, out);
 }
