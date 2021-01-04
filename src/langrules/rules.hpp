@@ -33,6 +33,8 @@ public:
   std::string number_abbrev;
   std::string abbrev;
   std::string sent_starters;
+  std::string file_exts;
+  std::string exclaim_words;
 
   std::map<string, std::shared_ptr<Rule>> rule_map_;
 
