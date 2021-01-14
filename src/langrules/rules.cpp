@@ -74,6 +74,8 @@ Rules::Rules() {
       "txt|rtf|bat|sxw|xml|zip|exe|msi|blend|wmv|mp[34]|pptx?|flac|rb|cpp|cs|js";
 
   // TODO: Bug on  ǃʼOǃKung this word both exclamations not recognized
+  // there are two kind of exclamations that look the same. ignored for the time 
+  // being
   exclaim_words =  "!Xũ|!Kung|ǃʼOǃKung|!Kung-Ekoka|!Xuun|!Hu|!Khung|!Ku|!ung|!Xo|!Xû|!Xung|!Xun|Yahoo!|Y!|J Yum!";
 
   debug_ = true;
@@ -238,6 +240,7 @@ void Rules::ApplyAdditionalReplacements(std::string &text) {
                "ThreeConsecutivePeriodRule",
                "OtherThreePeriodRule");
   ApplyReplaceWithinMatch(text, "ExclaimWordsRegex", "!", "&ᓴ&");
+
 }
 
 // function to replace continuous period abbreviations e.g. U.S.A, I.T. etc.
@@ -306,9 +309,9 @@ void Rules::ApplyReplace(std::string &text, std::string rule_name) {
   }
 }
 
-void Rules::ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::string pat, std::string repl) {
+void Rules::ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::vector<std::pair<std::string, std::string>> replacement_list) {
   const auto before = std::chrono::system_clock::now();
-  Utils::GlobalReplaceWithinMatch(text, GetRuleRegex(rule_name), "!", u8"&ᓴ&" );
+  Utils::GlobalReplaceWithinMatch(text, GetRuleRegex(rule_name), replacement_list );
   const std::chrono::duration<double> duration =
       (std::chrono::system_clock::now() - before) * 1000;
 
@@ -318,4 +321,9 @@ void Rules::ApplyReplaceWithinMatch(std::string &text, std::string rule_name, st
               << text << "\n"
               << std::endl; // DEBUG
   }
+}
+
+void Rules::ApplyReplaceWithinMatch (std::string &text, std::string rule_name, std::string pat, std::string repl) {
+  std::vector<std::pair<std::string, std::string>> replacement_list = { {pat, repl} };
+  ApplyReplaceWithinMatch(text, rule_name, replacement_list);
 }

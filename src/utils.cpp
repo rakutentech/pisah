@@ -1,5 +1,6 @@
 #include <string>
 #include <string_view>
+#include <vector>
 #include <iostream>
 
 #include <pcrecpp.h>
@@ -26,7 +27,7 @@ void Utils::FindAndReplaceAll(std::string &text, std::string orig, std::string r
     }
 }
 
-void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::string orig, std::string repl){
+void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::vector<std::pair<std::string,std::string>> replacement_list){
   pcrecpp::StringPiece text_sp = pcrecpp::StringPiece(text);
   std::string piece;
   std::string out;
@@ -34,7 +35,7 @@ void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::str
   // std::string rule_name = "MultiPeriodAbbreviationRegex" ;
   size_t end = text.length();
   size_t cur = 0;
-  
+  std::string orig, repl;
   int ngroups = 16;
   int consumed;
   const pcrecpp::Arg* args[16];
@@ -48,10 +49,14 @@ void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::str
       break;
     }
     out.append(text, cur, consumed - piece.length());
-    FindAndReplaceAll(piece, orig, repl);
+    for (auto orig_repl : replacement_list){
+        orig = orig_repl.first;
+        repl = orig_repl.second;
+        FindAndReplaceAll(piece, orig, repl);
+    }
+
     out.append(piece);
     cur += consumed;
-    std::cerr << consumed << text_sp << "A" << piece << std::endl;
     text_sp.remove_prefix(consumed);
     //std::cerr << "\nOUT" << out <<std::endl;
   }
