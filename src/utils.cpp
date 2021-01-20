@@ -27,6 +27,10 @@ void Utils::FindAndReplaceAll(std::string &text, std::string orig, std::string r
     }
 }
 
+// Funcion tor replace substring within a matched group
+// NOTE: make sure the complete pattern is captured.
+// except look ahead and look behind.
+// i.e., no traililing uncaptured characters in the regex.
 void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::vector<std::pair<std::string,std::string>> replacement_list){
   pcrecpp::StringPiece text_sp = pcrecpp::StringPiece(text);
   std::string piece;
@@ -48,12 +52,16 @@ void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::vec
     if (!matched){
       break;
     }
+
     out.append(text, cur, consumed - piece.length());
+    //std::cerr << "MATCHED:" << consumed << piece.length() <<std::endl;
+
     for (auto orig_repl : replacement_list){
         orig = orig_repl.first;
         repl = orig_repl.second;
         FindAndReplaceAll(piece, orig, repl);
     }
+    //std::cerr << "CHANGED:" << piece <<std::endl;
 
     out.append(piece);
     cur += consumed;

@@ -78,7 +78,13 @@ Rules::Rules() {
   // being
   exclaim_words =  "!Xũ|!Kung|ǃʼOǃKung|!Kung-Ekoka|!Xuun|!Hu|!Khung|!Ku|!ung|!Xo|!Xû|!Xung|!Xun|Yahoo!|Y!|J Yum!";
 
+  // punctuationr peplacement list
+  punct_replacements =  { {".",u8"∯"}, {u8"。",u8"&ᓰ&"}, {u8"．",u8"&ᓱ&"}, {u8"！",u8"&ᓳ&"}, 
+                          {"!",u8"&ᓴ&"}, {"?", u8"&ᓷ&"}, {u8"？",u8"&ᓸ&"}, {"'",u8"&⎋&"} };
+
   debug_ = true;
+
+  // TODO: make rules() function ot invoked to create all rules with the set of variables
 
   // Replacement Regexes
   rule_map_.emplace("NewlineRule", std::make_unique<Rule>(Rule("\n", "\r")));
@@ -204,10 +210,47 @@ Rules::Rules() {
   rule_map_.emplace("PeriodRevertRule",
                     std::make_unique<Rule>(Rule("∯", "\\.")));
 
-  // Other Regexes
+  // OTHER REGEXES
+  // -------------------------------
 
   rule_map_.emplace("ExclaimWordsRegex",
                     std::make_unique<Rule>(Rule("(?<=\\s|\\A)(" + exclaim_words + ")(?=\\s|\\Z)")));
+
+  // Rubular: http://rubular.com/r/2YFrKWQUYi
+  rule_map_.emplace("BetweenNeutralQuotes",
+                    std::make_unique<Rule>(Rule("(?<=\\s|\\A)((?<nquote>['\"])([^'\"]|'\\p{L})*\\k<nquote>)")));
+
+  // NOTE: make sure the complete pattern is captured for 
+  // replacing within match
+  rule_map_.emplace("BetweenSlantedSingleQuotes",
+                    std::make_unique<Rule>(Rule(u8"(?<=\\s|\\A)(‘([^’]|’\\p{L})*’)")));
+
+  rule_map_.emplace("BetweenSlantedDoubleQuotes",
+                    std::make_unique<Rule>(Rule(u8"(“[^”]*”)")));
+
+
+  rule_map_.emplace("BetweenSquareBrackets",
+                    std::make_unique<Rule>(Rule(u8"(\\[[^\\]]*\\])")));
+
+
+  rule_map_.emplace("BetweenParanthesis",
+                    std::make_unique<Rule>(Rule(u8"(\\([^\\)]*\\))")));
+
+  rule_map_.emplace("BetweenArrowQuotes",
+                    std::make_unique<Rule>(Rule(u8"(«[^»]*»)")));
+
+  rule_map_.emplace("BetweenBlockQuotes",
+                    std::make_unique<Rule>(Rule(u8"(「[^」]*」)")));
+
+  rule_map_.emplace("BetweenDoubleBlockQuotes",
+                    std::make_unique<Rule>(Rule(u8"(『[^』]*』)")));
+
+
+//                      std::make_unique<Rule>(Rule(u8"(?<=\\s|\\A)(‘[^’]*’)")));
+
+//                    std::make_unique<Rule>(Rule("(?<=\\s|\\A)(ݔ([^ݔ]|Y\\p{L})*ݔ)")));
+
+
 
   rule_map_.emplace("NewLineRegex",
                     std::make_unique<Rule>(Rule("([^\\.]+(?:\\n|\\Z))\\s*")));
@@ -230,8 +273,31 @@ void Rules::ApplyNumberReplacements(std::string &text) {
                "NewLineNumberPeriodSpaceLetterRule");
 };
 
-// all other additional replacement rules
-void Rules::ApplyAdditionalReplacements(std::string &text) {
+// function to replace EOS punctuations within certain sets of punctuations like [], "" etc.
+void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
+  ApplyReplaceWithinMatch(text, "ExclaimWordsRegex", "!", "&ᓴ&");
+  ApplyReplaceWithinMatch(text, "BetweenNeutralQuotes", punct_replacements);
+  ApplyReplaceWithinMatch(text, "BetweenSlantedSingleQuotes", punct_replacements);
+  ApplyReplaceWithinMatch(text, "BetweenSlantedDoubleQuotes", punct_replacements);
+  ApplyReplaceWithinMatch(text, "BetweenSquareBrackets", punct_replacements);
+  ApplyReplaceWithinMatch(text, "BetweenParanthesis", punct_replacements);
+  ApplyReplaceWithinMatch(text, "BetweenArrowQuotes", punct_replacements);
+  ApplyReplaceWithinMatch(text, "BetweenBlockQuotes", punct_replacements);
+  ApplyReplaceWithinMatch(text, "BetweenDoubleBlockQuotes", punct_replacements);
+  // TODO: SKIPPED: between em-dashes?
+}
+
+// apply replacement rules
+void Rules::ApplyRules(std::string &text) {
+  
+  ApplyReplace(text, "NewlineRule");
+
+  // TODO: list replacements are not done. special case handling
+  //(i), (ii), etc. and 1. 2. 3. list etc.
+
+  ApplyAbbreviationReplacements(text);
+  ApplyNumberReplacements(text);
+
   ApplyReplace(text, "WithMultiplePeriodsAndEmailRule",
                "GeolocationRule",
                "FileFormatRule");
@@ -239,7 +305,10 @@ void Rules::ApplyAdditionalReplacements(std::string &text) {
                "FourConsecutivePeriodRule",
                "ThreeConsecutivePeriodRule",
                "OtherThreePeriodRule");
-  ApplyReplaceWithinMatch(text, "ExclaimWordsRegex", "!", "&ᓴ&");
+
+  ApplyBetweenPunctuationReplacements(text);
+
+
 
 }
 
