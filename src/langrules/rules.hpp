@@ -36,6 +36,8 @@ public:
   std::string file_exts;
   std::string exclaim_words;
 
+  std::vector<std::pair<std::string,std::string>> punct_replacements;
+
   std::map<string, std::shared_ptr<Rule>> rule_map_;
 
   Rules();
@@ -55,6 +57,9 @@ public:
   std::shared_ptr<Rule> GetRule(std::string rule_name);
   pcrecpp::RE GetRuleRegex(std::string rule_name);
 
+
+  virtual void SetupRules();
+
   void ApplyReplace(std::string &text, std::string rule_name);
 
   // template function to allow arbitrary number of rulenames to be passed and
@@ -66,11 +71,17 @@ public:
   }
 
   // TODO: support regex pat. now only string patterns are supported
+  // overloaded function for single replacement
   void ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::string pat, std::string repl);
+  // for a list of replacements within match
+  void ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::vector<std::pair<std::string, std::string>> replacement_list);
 
   virtual void ApplyAbbreviationReplacements(std::string &text);
   virtual void ApplyNumberReplacements(std::string &text);
-  virtual void ApplyAdditionalReplacements(std::string &text);
+  virtual void ApplyBetweenPunctuationReplacements(std::string &text);
+
+  // function to apply all rules
+  virtual void ApplyRules(std::string &text);
 };
 
 #endif
