@@ -24,6 +24,7 @@ Rule::Rule(std::string pat, const pcrecpp::RE_Options &options)
 Rule::Rule(std::string pat, std::string repl)
     : Rule::Rule(pat, repl, Rules::options_){};
 
+// TODO: change options to Rule class.?
 Rule::Rule(std::string pat) : Rule::Rule(pat, Rules::options_){};
 
 // function to get regex
@@ -44,8 +45,7 @@ void Rule::Replace(std::string &text) {
 Rules::Rules() {
 
   // Constants
-  eos_punct = "[\\!\\?\\.]";
-  eos = "" + eos + "|\\n|\\r|\\z";
+  eos_punct = u8"[。．\\.！\\!\\?？]";
 
 
   prepositive_abbrev =
@@ -84,10 +84,16 @@ Rules::Rules() {
 
   debug_ = true;
 
+
+};
+
+void Rules::SetupRules(){
+  eos = eos_punct + "|\\n|\\r|\\Z";
+
   // TODO: make rules() function ot invoked to create all rules with the set of variables
 
   // Replacement Regexes
-  rule_map_.emplace("NewlineRule", std::make_unique<Rule>(Rule("\n", "\r")));
+  rule_map_.emplace("NewlineRule", std::make_unique<Rule>(Rule("\r", "\n")));
 
   // ABBREVIATION RULES
   // http://rubular.com/r/yqa4Rit8EY --> Ex: Jr.'s --> Jr∯'s
@@ -172,7 +178,7 @@ Rules::Rules() {
   // lowercased), typically in  e-mails or usernames without spaces..
   rule_map_.emplace(
       "WithMultiplePeriodsAndEmailRule",
-      std::make_unique<Rule>(Rule("([a-z0-9_])(\\.)([a-z0-9_])", u8"\\1∮\\3")));
+      std::make_unique<Rule>(Rule("([a-z0-9_])(\\.)([a-z0-9_])", u8"\\1∯\\3")));
 
   // https://regex101.com/r/6JGVof/1/. period after letter followed by degree symbol (°) followed by numbers
   rule_map_.emplace(
@@ -244,18 +250,12 @@ Rules::Rules() {
 
   rule_map_.emplace("BetweenDoubleBlockQuotes",
                     std::make_unique<Rule>(Rule(u8"(『[^』]*』)")));
+  
 
-
-//                      std::make_unique<Rule>(Rule(u8"(?<=\\s|\\A)(‘[^’]*’)")));
-
-//                    std::make_unique<Rule>(Rule("(?<=\\s|\\A)(ݔ([^ݔ]|Y\\p{L})*ݔ)")));
-
-
-
+  
   rule_map_.emplace("NewLineRegex",
-                    std::make_unique<Rule>(Rule("([^\\.]+(?:\\n|\\Z))\\s*")));
-};
-
+                    std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|" + eos_punct +  ")+)", Options().set_multiline(true) )));
+}
 // Rule functions which can be overridden in specific language classes
 void Rules::ApplyAbbreviationReplacements(std::string &text) {
   ApplyReplace(text, "PossessiveAbbreviationRule",
@@ -276,9 +276,11 @@ void Rules::ApplyNumberReplacements(std::string &text) {
 // function to replace EOS punctuations within certain sets of punctuations like [], "" etc.
 void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
   ApplyReplaceWithinMatch(text, "ExclaimWordsRegex", "!", "&ᓴ&");
+  
   ApplyReplaceWithinMatch(text, "BetweenNeutralQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenSlantedSingleQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenSlantedDoubleQuotes", punct_replacements);
+  // TODO: replace many of these with conditional regexes if possible
   ApplyReplaceWithinMatch(text, "BetweenSquareBrackets", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenParanthesis", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenArrowQuotes", punct_replacements);
@@ -301,6 +303,7 @@ void Rules::ApplyRules(std::string &text) {
   ApplyReplace(text, "WithMultiplePeriodsAndEmailRule",
                "GeolocationRule",
                "FileFormatRule");
+
   ApplyReplace(text, "ThreePeriodSpacesRule",
                "FourConsecutivePeriodRule",
                "ThreeConsecutivePeriodRule",
@@ -308,33 +311,12 @@ void Rules::ApplyRules(std::string &text) {
 
   ApplyBetweenPunctuationReplacements(text);
 
-
+  // TODO:? double punctuation rules (?!, !?, ??, !!) (too specific)
+  // TODO:? exclamation rules (\!(?=\,\s[a-z]) and '\!(?=\s[a-z]) (too specific.)
 
 }
 
-// function to replace continuous period abbreviations e.g. U.S.A, I.T. etc.
-// TODO: remove. has been replaced with a regex substitution.
-// void Rules::ApplyMultiPeriodReplacement(std::string &text) {
-//   pcrecpp::StringPiece text_sp = Utils::to_strpiece(text);
-//   std::string piece;
-//   const auto before = std::chrono::system_clock::now();
-//   std::string rule_name = "MultiPeriodAbbreviationRegex" ;
-//   while (pcrecpp::RE("(\\b[a-z]\\.)").FindAndConsume(&text_sp, &piece)) {
-//     std::cerr <<  "CC" << piece << piece.data() - text_sp.data() <<
-//     std::endl; ApplyReplace(piece, "PeriodRule");
-//   }
-//   const std::chrono::duration<double> duration =
-//       (std::chrono::system_clock::now() - before) * 1000;
-
-//   if (debug_ == false) {
-//     std::cerr << "After applying " << rule_name << " (took " <<
-//     duration.count()
-//               << "ms) :\n"
-//               << text << "\n"
-//               << std::endl; // DEBUG
-//   }
-// };
-
+// create rules map for leach language.
 std::map<std::string, std::function<std::unique_ptr<Rules>()>>
     Rules::lang_map_ = []() {
       std::map<std::string, std::function<std::unique_ptr<Rules>()>> lang_map;
@@ -342,6 +324,8 @@ std::map<std::string, std::function<std::unique_ptr<Rules>()>>
       return lang_map;
     }();
 
+// create the rules object using a factory method
+// set debug flag.
 std::unique_ptr<Rules> Rules::CreateLangRules(std::string &lang, bool debug) {
   std::unique_ptr<Rules> rules = Rules::lang_map_[lang]();
   rules->debug_ = debug;
@@ -359,6 +343,7 @@ std::shared_ptr<Rule> Rules::GetRule(std::string rule_name) {
   return rule_map_[rule_name];
 };
 
+// Fnction to get the regex from the rule
 pcrecpp::RE Rules::GetRuleRegex(std::string rule_name) {
   auto rule = GetRule(rule_name);
   return rule->Regex();
