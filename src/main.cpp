@@ -8,7 +8,7 @@
 #include "berpecah.hpp"
 
 int main(int argc, char *argv[]) {
-
+	std::locale::global(std::locale("en_US.UTF-8"));
   std::string lang = "en";
   Berpecah b(lang, true);
 
