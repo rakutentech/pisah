@@ -5,15 +5,15 @@
 
 #include <pcrecpp.h>
 
-#include "berpecah.hpp"
+#include "pisah.hpp"
 #include "processor.hpp"
 
-Berpecah::Berpecah(const std::string &lang, bool debug)
+Pisah::Pisah(const std::string &lang, bool debug)
     : lang_(lang), debug_(debug) {}
-Berpecah::Berpecah(const std::string &lang) : lang_(lang), debug_(false) {}
+Pisah::Pisah(const std::string &lang) : lang_(lang), debug_(false) {}
 
-// function to segment
-std::vector<std::string> Berpecah::Segment(std::string text) {
+  // function to segment
+  std::vector<std::string> Pisah::Segment(std::string text) {
 
   // processor object
   Processor processor{text, lang_, debug_};

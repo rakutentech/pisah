@@ -3,13 +3,13 @@
 #include <string>
 #include <vector>
 
-class Berpecah {
+class Pisah {
 private:
   const std::string lang_;
 
 public:
-  Berpecah(const std::string &lang, bool debug);
-  Berpecah(const std::string &lang);
+  Pisah(const std::string &lang, bool debug);
+  Pisah(const std::string &lang);
   std::vector<std::string> Segment(std::string text);
   bool debug_;
 };

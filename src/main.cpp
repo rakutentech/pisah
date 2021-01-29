@@ -5,12 +5,12 @@
 
 #include <pcrecpp.h>
 
-#include "berpecah.hpp"
+#include "pisah.hpp"
 
 int main(int argc, char *argv[]) {
-	std::locale::global(std::locale("en_US.UTF-8"));
+  std::locale::global(std::locale("en_US.UTF-8"));
   std::string lang = "en";
-  Berpecah b(lang, true);
+  Pisah pisah(lang, true);
 
   std::string text;
   std::string line;
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     }
     text += line;
   }
-  auto pieces = b.Segment(text);
+  auto pieces = pisah.Segment(text);
   for (int i = 0; i < pieces.size(); i++) {
     std::cout << i << " ||| " << pieces[i] << std::endl;
   }
