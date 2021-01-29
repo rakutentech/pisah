@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.9)
-project(berpecah)
+project(pisah)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_BUILD_TYPE "Debug")
