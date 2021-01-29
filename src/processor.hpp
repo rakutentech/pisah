@@ -20,8 +20,6 @@ public:
   Processor(std::string text, const std::string &lang);
   Processor(std::string text, const std::string &lang, bool debug);
 
-  // PCRE options object
-  static pcrecpp::RE_Options options_;
 
   std::vector<std::string> process();
 };
