@@ -99,24 +99,24 @@ void Rules::SetupRules(){
   // http://rubular.com/r/yqa4Rit8EY --> Ex: Jr.'s --> Jr∯'s
   rule_map_.emplace(
       "PossessiveAbbreviationRule",
-      std::make_unique<Rule>(Rule("\\.(?='s(\\s|" + eos + "))", u8"∯")));
+      std::make_unique<Rule>(Rule("\\.(?='s(\\p{Z}|" + eos + "))", u8"∯")));
 
   // http://rubular.com/r/e3H6kwnr6H --> Example: ^Q. This --> Q∯ This
   rule_map_.emplace(
       "SingleUpperCaseLetterAtStartOfLineRule",
-      std::make_unique<Rule>(Rule("(?<=^[A-Z])\\.(?=\\s)", u8"∯")));
+      std::make_unique<Rule>(Rule("(?<=^\\p{Lu})\\.(?=\\p{Z})", u8"∯")));
 
   // http://rubular.com/r/gitvf0YWH4 --> Example: ^Q. This --> Q∯ This
   rule_map_.emplace(
       "SingleUpperCaseLetterRule",
-      std::make_unique<Rule>(Rule("(?<=\\s[A-Z])\\.(?=\\s)", u8"∯")));
+      std::make_unique<Rule>(Rule("(?<=\\p{Z}[A-Z])\\.(?=\\p{Z})", u8"∯")));
 
   // https://regex101.com/r/VhPPOT/2/ --> preceeded by space or at the start of
   // the string,  followed by uppercase char, space, or ":[0-9]+"
   rule_map_.emplace(
       "PrepositiveAbbreviationRule",
-      std::make_unique<Rule>(Rule("((?:\\A|\\s)(?:" + prepositive_abbrev +
-                                      "))\\.((?-i)[[:upper:]]|\\s|:\\d+)",
+      std::make_unique<Rule>(Rule("((?:\\A|\\p{Z})(?:" + prepositive_abbrev +
+                                      "))\\.((?-i)[[:upper:]]|\\p{Z}|:\\p{N}+)",
                                   u8"\\1∯\\2", Options().set_caseless(true))));
 
   // https://regex101.com/r/eCgMwp/1// --> preceeded by space or at the start of
@@ -124,7 +124,7 @@ void Rules::SetupRules(){
   rule_map_.emplace(
       "NumberAbbreviationRule",
       std::make_unique<Rule>(
-          Rule("((?:\\A|\\s)(?:" + number_abbrev + "))\\.(\\s*(\\d|\\())",
+          Rule("((?:\\A|\\p{Z})(?:" + number_abbrev + "))\\.(\\p{Z}*(\\p{N}|\\())",
                u8"\\1∯\\2")));
 
   // https://regex101.com/r/5eZc0s/2/ --> preceeded by space or at the start of
@@ -132,8 +132,8 @@ void Rules::SetupRules(){
   rule_map_.emplace(
       "AbbreviationRule",
       std::make_unique<Rule>(Rule(
-          "((?:\\A|\\s)(?:" + abbrev +
-              "))\\.((\\.|\\:|-|\\?|\\,)|(\\s([a-z]|I\\s|I'm|I'll|\\d|\\()))",
+          "((?:\\A|\\p{Z})(?:" + abbrev +
+              "))\\.((\\.|\\:|-|\\?|\\,)|(\\p{Z}(\\p{Ll}|I\\p{Z}|I'm|I'll|\\d|\\()))",
           u8"\\1∯\\2")));
 
   // https://regex101.com/r/wR4fJ6/17 : A period(.) preceeded by .[a-z] or
@@ -141,37 +141,37 @@ void Rules::SetupRules(){
   // uppercase character.
   rule_map_.emplace("LetterPeriodAbbreviationRule",
                     std::make_unique<Rule>(Rule(
-                        "(?<=\\.[a-z]|\\b[a-z])\\.(?=[a-z]\\.|[a-z]\\b|\\s)",
+                        "(?<=\\.[a-z]|\\b[a-z])\\.(?=[a-z]\\.|[a-z]\\b|\\p{Z})",
                         "∯", Options().set_caseless(true))));
 
   // https://regex101.com/r/lOiT5h/1/. A.m. and
   rule_map_.emplace(
       "AmPmAbbreviationRule",
-      std::make_unique<Rule>(Rule("(?<= [APap]∯[Mm])∯(?=\\s\\p{Lu})", ".")));
+      std::make_unique<Rule>(Rule("(?<= [APap]∯[Mm])∯(?=\\p{Z}\\p{Lu})", ".")));
 
   // https://regex101.com/r/TerB5D/2/: few abbreviations followed by usual
   // sentence starters (default=English)
   rule_map_.emplace(
       "AbbreviationSentStarterRule",
       std::make_unique<Rule>(
-          Rule("(U∯S|U\\.S|U∯K|E∯U|E\\.U|U∯S∯A|U\\.S\\.A|I|i.v)∯(?=\\s+(" +
+          Rule("(U∯S|U\\.S|U∯K|E∯U|E\\.U|U∯S∯A|U\\.S\\.A|I|i.v)∯(?=\\p{Z}+(" +
                    sent_starters + ")\\b)",
                "\\1.", Options().set_caseless(true))));
 
   // NUMBER RULES
   // https://regex101.com/r/AizR2R/1/ --> e.g. 3.14 --> 3∯1.4
   rule_map_.emplace("PeriodBeforeNumberRule",
-                    std::make_unique<Rule>(Rule("\\.(\\d)", u8"∯\\1")));
+                    std::make_unique<Rule>(Rule("\\.(\\p{N})", u8"∯\\1")));
 
   // https://regex101.com/r/PtrPu6/2/
   rule_map_.emplace("NumberAfterPeriodBeforeLetterRule",
-                    std::make_unique<Rule>(Rule("(\\d)\\.(\\S)", u8"\\1∯\\2")));
+                    std::make_unique<Rule>(Rule("(\\d)\\.(\\P{Z})", u8"\\1∯\\2")));
 
   // https://regex101.com/r/PtrPu6/4/: numbering lists of upto 3 digits
   // (covers starting of the line and upto three digits)
   rule_map_.emplace("NewLineNumberPeriodSpaceLetterRule",
                     std::make_unique<Rule>(Rule(
-                        "((?:\\r|\\A)\\d{1,3})\\.(\\s*\\S)", u8"\\1∯\\2")));
+                        "((?:\\n|\\A)\\d{1,3})\\.(\\p{Z}*\\P{Z})", u8"\\1∯\\2")));
 
   // ADDITIONAL RULES
   // https://regex101.com/r/i4YWZI/2/ alphanum period alphanum (only considering
@@ -183,7 +183,7 @@ void Rules::SetupRules(){
   // https://regex101.com/r/6JGVof/1/. period after letter followed by degree symbol (°) followed by numbers
   rule_map_.emplace(
       "GeolocationRule",
-      std::make_unique<Rule>(Rule("([a-zA-Z]°)\\.(\\s*\\d+)", u8"\\1∯\\2" )));
+      std::make_unique<Rule>(Rule("(\\p{L}°)\\.(\\p{Z}*\\p{N}+)", u8"\\1∯\\2" )));
 
   // https://regex101.com/r/aUASgT/1/
   rule_map_.emplace("FileFormatRule",
@@ -194,17 +194,17 @@ void Rules::SetupRules(){
   // https://regex101.com/r/GwwKpt/1/: replace three periods with spaces and followed by lowercase.
   rule_map_.emplace(
       "ThreePeriodSpacesRule",
-      std::make_unique<Rule>(Rule("(\\s\\.){3}\\s", u8"∯ ∯ ∯ " )));
+      std::make_unique<Rule>(Rule("(\\p{Z}\\.){3}\\p{Z}", u8"∯ ∯ ∯ " )));
 
   // https://regex101.com/r/JXrOZG/1: replace three periods if ellipses followed by another period
   rule_map_.emplace(
       "FourConsecutivePeriodRule",
-      std::make_unique<Rule>(Rule("(?<=\\S)\\.{3}(?=\\.\\s\\p{Lu})", u8"∯∯∯" )));
+      std::make_unique<Rule>(Rule("(?<=\\P{Z})\\.{3}(?=\\.\\p{Z}\\p{Lu})", u8"∯∯∯" )));
 
   // https://regex101.com/r/pTlZiM/1: replace two periods in ellipses, if followed by uppercase letter.
   rule_map_.emplace(
       "ThreeConsecutivePeriodRule",
-      std::make_unique<Rule>(Rule("\\.\\.\\.(\\s+\\p{Lu})", u8"∯∯.\\1" )));
+      std::make_unique<Rule>(Rule("\\.\\.\\.(\\p{Z}+\\p{Lu})", u8"∯∯.\\1" )));
 
   // replace all three periods (only to be applied afer the previous rules.)
   rule_map_.emplace(
@@ -220,16 +220,16 @@ void Rules::SetupRules(){
   // -------------------------------
 
   rule_map_.emplace("ExclaimWordsRegex",
-                    std::make_unique<Rule>(Rule("(?<=\\s|\\A)(" + exclaim_words + ")(?=\\s|\\Z)")));
+                    std::make_unique<Rule>(Rule("(?<=\\p{Z}|\\A)(" + exclaim_words + ")(?=\\p{Z}|\\Z)")));
 
   // Rubular: http://rubular.com/r/2YFrKWQUYi
   rule_map_.emplace("BetweenNeutralQuotes",
-                    std::make_unique<Rule>(Rule("(?<=\\s|\\A)((?<nquote>['\"])([^'\"]|'\\p{L})*\\k<nquote>)")));
+                    std::make_unique<Rule>(Rule("(?<=\\p{Z}|\\A)((?<nquote>['\"])([^'\"]|'\\p{L})*\\k<nquote>)")));
 
   // NOTE: make sure the complete pattern is captured for
   // replacing within match
   rule_map_.emplace("BetweenSlantedSingleQuotes",
-                    std::make_unique<Rule>(Rule(u8"(?<=\\s|\\A)(‘([^’]|’\\p{L})*’)")));
+                    std::make_unique<Rule>(Rule(u8"(?<=\\p{Z}|\\A)(‘([^’]|’\\p{L})*’)")));
 
   rule_map_.emplace("BetweenSlantedDoubleQuotes",
                     std::make_unique<Rule>(Rule(u8"(“[^”]*”)")));
@@ -254,7 +254,7 @@ void Rules::SetupRules(){
 
 
   rule_map_.emplace("NewLineRegex",
-                    std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|" + eos_punct +  ")+)", Options().set_multiline(true) )));
+                    std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|" + eos_punct +  ")+\\p{Z}*)", Options().set_multiline(true) )));
                    //std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|"+ eos_punct + ")+)", Options().multiline() )));
 }
 // Rule functions which can be overridden in specific language classes
