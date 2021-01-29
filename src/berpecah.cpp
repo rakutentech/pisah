@@ -18,11 +18,8 @@ std::vector<std::string> Berpecah::Segment(std::string text) {
   // processor object
   Processor processor{text, lang_, debug_};
 
-  std::vector<std::string> str_pieces;
-
   // process function
-
-  str_pieces = processor.process();
+  std::vector<std::string> str_pieces = processor.process();
 
   return str_pieces;
 };
