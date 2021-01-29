@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -26,6 +27,7 @@ void Utils::FindAndReplaceAll(std::string &text, std::string orig, std::string r
         pos =text.find(orig, pos + repl.size());
     }
 }
+
 
 // Funcion tor replace substring within a matched group
 // NOTE: make sure the complete pattern is captured.
@@ -70,4 +72,51 @@ void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::vec
   }
   out.append(text, cur, text.length() - cur );
   std::swap(text, out);
+}
+
+
+std::vector<std::string> Utils::FindAndConsumeAll(std::string &text, pcrecpp::RE re){
+  pcrecpp::StringPiece text_sp = pcrecpp::StringPiece(text);
+
+  std::vector<std::string> str_list;
+
+  int ngroups = 16;
+  int consumed;
+
+  // create arg objets to store the output match
+  std::string piece;
+  //const pcrecpp::Arg* args[16];
+  //pcrecpp::Arg argpiece(&piece);
+  //args[0] = &argpiece;
+
+  bool matched = true;
+  while (re.FindAndConsume(&text_sp, &piece)){
+    //matched = re.DoMatch(text_sp, pcrecpp::RE::UNANCHORED, &consumed, args, 1);
+    //if (!matched){
+    ///  break;
+    //}
+
+    //text_sp.remove_prefix(consumed);
+    str_list.push_back(piece);
+  }
+  return str_list;
+
+}
+
+// trim from end (in place)
+void Utils::RTrim(std::string &s) {
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+        return !std::isspace(ch);
+    }).base(), s.end());
+}
+
+//find size of unicode character (1,2, or 4 bytes) based on the first character.
+// https://stackoverflow.com/questions/40054732/c-iterate-utf-8-string-with-mixed-length-of-characters
+int Utils::FindCodePointSize(std::string &s, int i){
+  int cplen = 1;
+  if((s[i] & 0xf8) == 0xf0) cplen = 4;
+  else if((s[i] & 0xf0) == 0xe0) cplen = 3;
+  else if((s[i] & 0xe0) == 0xc0) cplen = 2;
+  if((i + cplen) > s.length()) cplen = 1;
+  return cplen;
 }
