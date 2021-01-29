@@ -69,17 +69,17 @@ Rules::Rules() {
   sent_starters =
       "a|being|did|for|he|how|however|i|in|it|millions|more|she|that|the|"
       "there|they|we|what|when|where|who|why";
-  file_exts = 
+  file_exts =
       "jpe?g|png|gif|tiff?|pdf|ps|docx?|xlsx?|svg|bmp|tga|exif|odt|html?|"
       "txt|rtf|bat|sxw|xml|zip|exe|msi|blend|wmv|mp[34]|pptx?|flac|rb|cpp|cs|js";
 
   // TODO: Bug on  ǃʼOǃKung this word both exclamations not recognized
-  // there are two kind of exclamations that look the same. ignored for the time 
+  // there are two kind of exclamations that look the same. ignored for the time
   // being
   exclaim_words =  "!Xũ|!Kung|ǃʼOǃKung|!Kung-Ekoka|!Xuun|!Hu|!Khung|!Ku|!ung|!Xo|!Xû|!Xung|!Xun|Yahoo!|Y!|J Yum!";
 
   // punctuationr peplacement list
-  punct_replacements =  { {".",u8"∯"}, {u8"。",u8"&ᓰ&"}, {u8"．",u8"&ᓱ&"}, {u8"！",u8"&ᓳ&"}, 
+  punct_replacements =  { {".",u8"∯"}, {u8"。",u8"&ᓰ&"}, {u8"．",u8"&ᓱ&"}, {u8"！",u8"&ᓳ&"},
                           {"!",u8"&ᓴ&"}, {"?", u8"&ᓷ&"}, {u8"？",u8"&ᓸ&"}, {"'",u8"&⎋&"} };
 
   debug_ = true;
@@ -194,22 +194,22 @@ void Rules::SetupRules(){
   // https://regex101.com/r/GwwKpt/1/: replace three periods with spaces and followed by lowercase.
   rule_map_.emplace(
       "ThreePeriodSpacesRule",
-      std::make_unique<Rule>(Rule("(\\s\\.){3}\\s", u8"∯ ∯ ∯ " )));  
+      std::make_unique<Rule>(Rule("(\\s\\.){3}\\s", u8"∯ ∯ ∯ " )));
 
   // https://regex101.com/r/JXrOZG/1: replace three periods if ellipses followed by another period
   rule_map_.emplace(
       "FourConsecutivePeriodRule",
-      std::make_unique<Rule>(Rule("(?<=\\S)\\.{3}(?=\\.\\s\\p{Lu})", u8"∯∯∯" )));  
+      std::make_unique<Rule>(Rule("(?<=\\S)\\.{3}(?=\\.\\s\\p{Lu})", u8"∯∯∯" )));
 
   // https://regex101.com/r/pTlZiM/1: replace two periods in ellipses, if followed by uppercase letter.
   rule_map_.emplace(
       "ThreeConsecutivePeriodRule",
-      std::make_unique<Rule>(Rule("\\.\\.\\.(\\s+\\p{Lu})", u8"∯∯.\\1" )));  
+      std::make_unique<Rule>(Rule("\\.\\.\\.(\\s+\\p{Lu})", u8"∯∯.\\1" )));
 
   // replace all three periods (only to be applied afer the previous rules.)
   rule_map_.emplace(
       "OtherThreePeriodRule",
-      std::make_unique<Rule>(Rule("\\.\\.\\.", u8"∯∯∯" )));  
+      std::make_unique<Rule>(Rule("\\.\\.\\.", u8"∯∯∯" )));
 
   // punct rules
   rule_map_.emplace("PeriodRule", std::make_unique<Rule>(Rule("\\.", u8"∯")));
@@ -226,7 +226,7 @@ void Rules::SetupRules(){
   rule_map_.emplace("BetweenNeutralQuotes",
                     std::make_unique<Rule>(Rule("(?<=\\s|\\A)((?<nquote>['\"])([^'\"]|'\\p{L})*\\k<nquote>)")));
 
-  // NOTE: make sure the complete pattern is captured for 
+  // NOTE: make sure the complete pattern is captured for
   // replacing within match
   rule_map_.emplace("BetweenSlantedSingleQuotes",
                     std::make_unique<Rule>(Rule(u8"(?<=\\s|\\A)(‘([^’]|’\\p{L})*’)")));
@@ -250,9 +250,9 @@ void Rules::SetupRules(){
 
   rule_map_.emplace("BetweenDoubleBlockQuotes",
                     std::make_unique<Rule>(Rule(u8"(『[^』]*』)")));
-  
 
-  
+
+
   rule_map_.emplace("NewLineRegex",
                     std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|" + eos_punct +  ")+)", Options().set_multiline(true) )));
                    //std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|"+ eos_punct + ")+)", Options().multiline() )));
@@ -277,7 +277,7 @@ void Rules::ApplyNumberReplacements(std::string &text) {
 // function to replace EOS punctuations within certain sets of punctuations like [], "" etc.
 void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
   ApplyReplaceWithinMatch(text, "ExclaimWordsRegex", "!", "&ᓴ&");
-  
+
   ApplyReplaceWithinMatch(text, "BetweenNeutralQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenSlantedSingleQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenSlantedDoubleQuotes", punct_replacements);
@@ -292,7 +292,7 @@ void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
 
 // apply replacement rules
 void Rules::ApplyRules(std::string &text) {
-  
+
   ApplyReplace(text, "NewlineRule");
 
   // TODO: list replacements are not done. special case handling

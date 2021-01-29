@@ -41,7 +41,7 @@ std::vector<std::string> Processor::process() {
   //   }
   str_list = Utils::FindAndConsumeAll(text_, rules_->GetRuleRegex("NewLineRegex"));
 
-  for (std::string &sent : str_list){
+  for (auto sent : str_list){
     rules_->PostProcess(sent);
   }
   // prev_i = 0
