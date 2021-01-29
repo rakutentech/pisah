@@ -255,6 +255,7 @@ void Rules::SetupRules(){
   
   rule_map_.emplace("NewLineRegex",
                     std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|" + eos_punct +  ")+)", Options().set_multiline(true) )));
+                   //std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|"+ eos_punct + ")+)", Options().multiline() )));
 }
 // Rule functions which can be overridden in specific language classes
 void Rules::ApplyAbbreviationReplacements(std::string &text) {
@@ -311,9 +312,18 @@ void Rules::ApplyRules(std::string &text) {
 
   ApplyBetweenPunctuationReplacements(text);
 
-  // TODO:? double punctuation rules (?!, !?, ??, !!) (too specific)
   // TODO:? exclamation rules (\!(?=\,\s[a-z]) and '\!(?=\s[a-z]) (too specific.)
 
+}
+
+// substitute the punctuations  back
+void Rules::PostProcess(std::string &text){
+    std::string punct, subst;
+    for (auto punct_subst : punct_replacements){
+        punct = punct_subst.first;
+        subst = punct_subst.second;
+        Utils::FindAndReplaceAll(text, subst, punct);
+    }
 }
 
 // create rules map for leach language.

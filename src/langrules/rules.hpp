@@ -53,7 +53,7 @@ public:
 
   static std::unique_ptr<Rules> CreateLangRules(string &lang, bool debug);
 
-  pcrecpp::RE_Options Options();
+  static pcrecpp::RE_Options Options();
   std::shared_ptr<Rule> GetRule(std::string rule_name);
   pcrecpp::RE GetRuleRegex(std::string rule_name);
 
@@ -76,12 +76,17 @@ public:
   // for a list of replacements within match
   void ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::vector<std::pair<std::string, std::string>> replacement_list);
 
+  // customizable functions that can be modified by
+  // inheirted language rules
   virtual void ApplyAbbreviationReplacements(std::string &text);
   virtual void ApplyNumberReplacements(std::string &text);
   virtual void ApplyBetweenPunctuationReplacements(std::string &text);
 
-  // function to apply all rules
+  // function to apply the sequence of rules
   virtual void ApplyRules(std::string &text);
+
+  // post-process the sentences
+  virtual void PostProcess(std::string &text);
 };
 
 #endif
