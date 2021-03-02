@@ -204,7 +204,7 @@ void Rules::SetupRules(){
   // https://regex101.com/r/pTlZiM/1: replace two periods in ellipses, if followed by uppercase letter.
   rule_map_.emplace(
       "ThreeConsecutivePeriodRule",
-      std::make_unique<Rule>(Rule("\\.\\.\\.(\\p{Z}+\\p{Lu})", u8"∯∯.\\1" )));
+      std::make_unique<Rule>(Rule("\\.\\.\\.(\\p{Z}*\\p{Lu})", u8"∯∯.\\1" )));
 
   // replace all three periods (only to be applied afer the previous rules.)
   rule_map_.emplace(
@@ -252,9 +252,8 @@ void Rules::SetupRules(){
                     std::make_unique<Rule>(Rule(u8"(『[^』]*』)")));
 
 
-
   rule_map_.emplace("NewLineRegex",
-                    std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|" + eos_punct +  ")+\\p{Z}*)", Options().set_multiline(true) )));
+                    std::make_unique<Rule>(Rule(u8"(.*?(?:\\n\\p{Z}*|" + eos_punct +  "\\p{Z}*)+)", Options().set_multiline(true) )));
                    //std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|"+ eos_punct + ")+)", Options().multiline() )));
 }
 // Rule functions which can be overridden in specific language classes
