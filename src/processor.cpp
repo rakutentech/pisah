@@ -28,7 +28,9 @@ std::vector<std::string> Processor::process() {
   //pcrecpp::StringPiece sent;
   std::string sent;
   const auto before = std::chrono::system_clock::now();
-  text_.append("\n");
+  if(text_.back() != '\n'){
+    text_.append("\n");
+  }
   rules_->ApplyRules(text_);
 
   // -- stub --
