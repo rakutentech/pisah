@@ -24,6 +24,10 @@ int main(int argc, char *argv[]) {
   }
   auto pieces = pisah.Segment(text);
   for (int i = 0; i < pieces.size(); i++) {
-    std::cout << i << " ||| " << pieces[i] << std::endl;
+    std::cerr << i << " | " << " ";
+    std::cout << pieces[i] ;
+    if (pieces[i].back() != '\n'){
+      std::cout << std::endl;
+    }
   }
 };
