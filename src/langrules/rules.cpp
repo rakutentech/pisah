@@ -253,8 +253,7 @@ void Rules::SetupRules(){
 
 
   rule_map_.emplace("NewLineRegex",
-                    std::make_unique<Rule>(Rule(u8"(.*?(?:\\n\\p{Z}*|" + eos_punct +  "\\p{Z}*)+)", Options().set_multiline(true) )));
-                   //std::make_unique<Rule>(Rule(u8"(.*?(?:\\n|"+ eos_punct + ")+)", Options().multiline() )));
+               std::make_unique<Rule>(Rule(u8"(.*?(?:(?:\\n\\p{Z}*)|(?:" + eos_punct +  "\\p{Z}*))+)", Options().set_multiline(true) )));
 }
 // Rule functions which can be overridden in specific language classes
 void Rules::ApplyAbbreviationReplacements(std::string &text) {
