@@ -1,16 +1,43 @@
+#include "pisah.hpp"
+
 #include <iostream>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include <pcrecpp.h>
+#include <args/args.hxx>
 
-#include "pisah.hpp"
 
 int main(int argc, char *argv[]) {
+
+    args::ArgumentParser parser("This is a test program.", "This goes after the options.");
+    args::ValueFlag<std::string>lang(parser, "language", "langauge code of the text ", {'l', "language"}, "en");
+    try
+    {
+        parser.ParseCLI(argc, argv);
+    }
+    catch (args::Help)
+    {
+        std::cout << parser;
+        return 0;
+    }
+    catch (args::ParseError e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::cerr << parser;
+        return 1;
+    }
+    catch (args::ValidationError e)
+    {
+        std::cerr << e.what() << std::endl;
+        std::cerr << parser;
+        return 1;
+    }
+
   std::locale::global(std::locale("en_US.UTF-8"));
-  std::string lang = "en";
-  Pisah pisah(lang, true);
+
+  Pisah pisah(args::get(lang), true);
 
   std::string text;
   std::string line;

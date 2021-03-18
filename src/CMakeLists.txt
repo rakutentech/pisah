@@ -1,5 +1,7 @@
 file(GLOB LANGRULES_SOURCES "langrules/*pp")
 
+include_directories(3rd_party)
+
 add_library(pisah STATIC pisah.cpp processor.cpp utils.cpp ${LANGRULES_SOURCES})
 target_link_libraries(pisah ${EXT_LIBS})
 set_target_properties(pisah PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
