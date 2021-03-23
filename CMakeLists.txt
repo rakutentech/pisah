@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # installing dependencies
 include(FindPCRECPP REQUIRED)
 
-# chceck if the compilation is done as an independent tool or as a submodule
+# check if the compilation is done as an independent tool or as a submodule
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(hasParent)
   set(STANDALONE_COMPILE off)
@@ -21,4 +21,4 @@ endif(hasParent)
 include_directories(src)
 
 add_subdirectory(src)
-
+add_subdirectory(test)
