@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
   std::locale::global(std::locale("en_US.UTF-8"));
 
-  Pisah pisah("en");//args::get(lang), debug);
+  Pisah pisah(args::get(lang), debug);//args::get(lang), debug);
 
   std::string text;
   std::string line;
