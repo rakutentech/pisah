@@ -345,7 +345,7 @@ std::unique_ptr<Rules> Rules::CreateLangRules(std::string &lang, bool debug) {
 pcrecpp::RE_Options Rules::Options() { return Rules::options_; };
 
 std::shared_ptr<Rule> Rules::GetRule(std::string rule_name) {
-  if (!rule_map_.count(rule_name) > 0) {
+  if (rule_map_.count(rule_name) == 0) {
     throw std::invalid_argument("No such rule " + rule_name);
   }
   return rule_map_[rule_name];

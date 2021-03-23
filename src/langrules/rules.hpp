@@ -39,7 +39,7 @@ public:
 
   std::vector<std::pair<std::string,std::string>> punct_replacements;
 
-  std::map<string, std::shared_ptr<Rule>> rule_map_;
+  std::map<std::string, std::shared_ptr<Rule>> rule_map_;
 
   Rules();
 
@@ -52,7 +52,7 @@ public:
       lang_map_;
   void static CreateLangRulesMap();
 
-  static std::unique_ptr<Rules> CreateLangRules(string &lang, bool debug);
+  static std::unique_ptr<Rules> CreateLangRules(std::string &lang, bool debug);
 
   static pcrecpp::RE_Options Options();
   std::shared_ptr<Rule> GetRule(std::string rule_name);
