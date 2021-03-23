@@ -8,7 +8,7 @@ The library is mostly based on:
     * PySBD (Python): (https://github.com/nipunsadvilkar/pySBD/)
 
 #### Installation
-* Install PCRE library. Run `sudo apt-get install libpcre3 libpcre3-cpp` on Ubuntu machines.
+* Install PCRE library. Run `sudo apt-get install libpcre3 libpcre3-dev` on Ubuntu machines.
 
 * Run the following commands
 ```
