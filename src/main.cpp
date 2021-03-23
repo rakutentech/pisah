@@ -11,8 +11,10 @@
 
 int main(int argc, char *argv[]) {
 
-    args::ArgumentParser parser("This is a test program.", "This goes after the options.");
+    args::ArgumentParser parser("Pisah - Sentence Splitter");
     args::ValueFlag<std::string>lang(parser, "language", "langauge code of the text ", {'l', "language"}, "en");
+    args::Flag debug(parser, "verbose", "to enable logging ", {'v', "verbose"});
+    
     try
     {
         parser.ParseCLI(argc, argv);
@@ -37,7 +39,7 @@ int main(int argc, char *argv[]) {
 
   std::locale::global(std::locale("en_US.UTF-8"));
 
-  Pisah pisah(args::get(lang), true);
+  Pisah pisah(args::get(lang), debug);
 
   std::string text;
   std::string line;
@@ -51,7 +53,9 @@ int main(int argc, char *argv[]) {
   }
   auto pieces = pisah.Segment(text);
   for (int i = 0; i < pieces.size(); i++) {
-    std::cerr << i << " | " << " ";
+    if (debug == true){
+      std::cerr << i << " | " << " ";
+    }
     std::cout << pieces[i] ;
     if (pieces[i].back() != '\n'){
       std::cout << std::endl;
