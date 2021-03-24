@@ -89,6 +89,13 @@ Rules::Rules() {
 
 void Rules::SetupRules(){
   eos = "["+eos_punct + "]|\\n|\\r|\\Z";
+  eos_punct_repl = "";
+  for (auto p: punct_replacements){
+    if (eos_punct_repl != ""){
+      eos_punct_repl += "|";
+    }
+     eos_punct_repl += p.second;
+  }
 
   // TODO: make rules() function ot invoked to create all rules with the set of variables
 
@@ -174,11 +181,11 @@ void Rules::SetupRules(){
                         "((?:\\n|\\A)\\d{1,3})\\.(\\p{Z}*\\P{Z})", u8"\\1∯\\2")));
 
   // ADDITIONAL RULES
-  // https://regex101.com/r/i4YWZI/2/ alphanum period alphanum (only considering
-  // lowercased), typically in  e-mails or usernames without spaces..
+  // https://regex101.com/r/i4YWZI/2/ alphanum period alphanum
+  //, typically in  e-mails or usernames without spaces..
   rule_map_.emplace(
       "WithMultiplePeriodsAndEmailRule",
-      std::make_unique<Rule>(Rule("([a-z0-9_])(\\.)([a-z0-9_])", u8"\\1∯\\3")));
+      std::make_unique<Rule>(Rule("([a-zA-Z0-9_])(\\.)([a-zA-Z0-9_])", u8"\\1∯\\3")));
 
   // https://regex101.com/r/6JGVof/1/. period after letter followed by degree symbol (°) followed by numbers
   rule_map_.emplace(
@@ -194,7 +201,7 @@ void Rules::SetupRules(){
   // https://regex101.com/r/GwwKpt/1/: replace three periods with spaces and followed by lowercase.
   rule_map_.emplace(
       "ThreePeriodSpacesRule",
-      std::make_unique<Rule>(Rule("(\\p{Z}\\.){3}\\p{Z}", u8"∯ ∯ ∯ " )));
+      std::make_unique<Rule>(Rule("(\\p{Z}\\.){3}\\p{Z}", u8" ∯ ∯ ∯ " )));
 
   // https://regex101.com/r/JXrOZG/1: replace three periods if ellipses followed by another period
   rule_map_.emplace(
@@ -233,6 +240,9 @@ void Rules::SetupRules(){
 
   rule_map_.emplace("BetweenSlantedDoubleQuotes",
                     std::make_unique<Rule>(Rule(u8"(“[^”]*”)")));
+
+  rule_map_.emplace("QuotesEndSentence",
+                    std::make_unique<Rule>(Rule(u8"((?:"+eos_punct_repl+")[\'\"’”] S)")));
 
 
   rule_map_.emplace("BetweenSquareBrackets",
@@ -285,6 +295,7 @@ void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
   ApplyReplaceWithinMatch(text, "BetweenArrowQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenBlockQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenDoubleBlockQuotes", punct_replacements);
+  ApplyReplaceWithinMatch(text, "QuotesEndSentence", punct_replacements, true);
   // TODO: SKIPPED: between em-dashes?
 }
 
@@ -371,9 +382,9 @@ void Rules::ApplyReplace(std::string &text, std::string rule_name) {
   }
 }
 
-void Rules::ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::vector<std::pair<std::string, std::string>> replacement_list) {
+void Rules::ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::vector<std::pair<std::string, std::string>> replacement_list, bool inverse) {
   const auto before = std::chrono::system_clock::now();
-  Utils::GlobalReplaceWithinMatch(text, GetRuleRegex(rule_name), replacement_list );
+  Utils::GlobalReplaceWithinMatch(text, GetRuleRegex(rule_name), replacement_list, inverse);
   const std::chrono::duration<double> duration =
       (std::chrono::system_clock::now() - before) * 1000;
 

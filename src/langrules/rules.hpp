@@ -29,6 +29,7 @@ class Rules {
 
 public:
   std::string eos_punct;
+  std::string eos_punct_repl;
   std::string eos;
   std::string prepositive_abbrev;
   std::string number_abbrev;
@@ -75,7 +76,7 @@ public:
   // overloaded function for single replacement
   void ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::string pat, std::string repl);
   // for a list of replacements within match
-  void ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::vector<std::pair<std::string, std::string>> replacement_list);
+  void ApplyReplaceWithinMatch(std::string &text, std::string rule_name, std::vector<std::pair<std::string, std::string>> replacement_list, bool inverse = false);
 
   // customizable functions that can be modified by
   // inheirted language rules
