@@ -67,8 +67,8 @@ Rules::Rules() {
       "supt|surg|tce|tenn|tex|univ|usafa|u\\.s|ut|va|v|ver|viz|vs|vt|wash|wis|"
       "wisc|wy|wyo|yuk|fig";
   sent_starters =
-      "a|being|did|for|he|how|however|i|in|it|millions|more|she|that|the|"
-      "there|they|we|what|when|where|who|why";
+      "A|Being|Did|For|He|How|However|I|In|It|Millions|More|She|That|The|"
+      "There|They|We|What|When|Where|Who|Why";
   file_exts =
       "jpe?g|png|gif|tiff?|pdf|ps|docx?|xlsx?|svg|bmp|tga|exif|odt|html?|"
       "txt|rtf|bat|sxw|xml|zip|exe|msi|blend|wmv|mp[34]|pptx?|flac|rb|cpp|cs|js";
@@ -134,7 +134,7 @@ void Rules::SetupRules(){
       std::make_unique<Rule>(Rule(
           "((?:\\A|\\p{Z})(?:" + abbrev +
               "))\\.((\\.|\\:|-|\\?|\\,)|(\\p{Z}(\\p{Ll}|I\\p{Z}|I'm|I'll|\\d|\\()))",
-          u8"\\1∯\\2")));
+          u8"\\1∯\\2", Options().set_caseless(true))));
 
   // https://regex101.com/r/wR4fJ6/17 : A period(.) preceeded by .[a-z] or
   // \b[a-z] and followed by [a-z]. or [a-z]\b or a space followed by a non
@@ -154,7 +154,7 @@ void Rules::SetupRules(){
   rule_map_.emplace(
       "AbbreviationSentStarterRule",
       std::make_unique<Rule>(
-          Rule("(U∯S|U\\.S|U∯K|E∯U|E\\.U|U∯S∯A|U\\.S\\.A|I|i.v)∯(?=\\p{Z}+(" +
+          Rule("(U∯S|U\\.S|U∯K|E∯U|E\\.U|U∯S∯A|U\\.S\\.A|I|i.v)∯(?=\\p{Z}+((?-i)" +
                    sent_starters + ")\\b)",
                "\\1.", Options().set_caseless(true))));
 
