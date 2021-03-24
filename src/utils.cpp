@@ -33,7 +33,7 @@ void Utils::FindAndReplaceAll(std::string &text, std::string orig, std::string r
 // NOTE: make sure the complete pattern is captured.
 // except look ahead and look behind.
 // i.e., no traililing uncaptured characters in the regex.
-void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::vector<std::pair<std::string,std::string>> replacement_list){
+void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::vector<std::pair<std::string,std::string>> replacement_list, bool inverse){
   pcrecpp::StringPiece text_sp = pcrecpp::StringPiece(text);
   std::string piece;
   std::string out;
@@ -58,9 +58,15 @@ void Utils::GlobalReplaceWithinMatch(std::string &text, pcrecpp::RE re, std::vec
     out.append(text, cur, consumed - piece.length());
     //std::cerr << "MATCHED:" << consumed << piece.length() <<std::endl;
 
-    for (auto orig_repl : replacement_list){
-        orig = orig_repl.first;
-        repl = orig_repl.second;
+    for (auto repl_pat : replacement_list){
+        if (inverse == false){
+          orig = repl_pat.first;
+          repl = repl_pat.second;
+        }
+        else{
+          orig = repl_pat.second;
+          repl = repl_pat.first;
+        }
         FindAndReplaceAll(piece, orig, repl);
     }
     //std::cerr << "CHANGED:" << piece <<std::endl;
