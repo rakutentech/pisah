@@ -161,7 +161,7 @@ TEST_CASE("Golden Rule Tests") {
                 std::vector<std::string>{ "I wasn’t really ... well, what I mean...see . . . what I'm saying, the thing is . . . I didn’t mean it." }
                 },
                 {"One further habit which was somewhat weakened . . . was that of combining words into self-interpreting compounds. . . . The practice was not abandoned. . . .",
-                std::vector<std::string>{ "One further habit which was somewhat weakened . . . was that of combining words into self-interpreting compounds.",". . . The practice was not abandoned. . . ." }
+                std::vector<std::string>{ "One further habit which was somewhat weakened . . . was that of combining words into self-interpreting compounds. ",". . . The practice was not abandoned. . . ." }
                 }
 
 
