@@ -89,6 +89,7 @@ Rules::Rules() {
 
 void Rules::SetupRules(){
   eos = "["+eos_punct + "]|\\n|\\r|\\Z";
+
   eos_punct_repl = "";
   for (auto p: punct_replacements){
     if (eos_punct_repl != ""){
@@ -229,6 +230,10 @@ void Rules::SetupRules(){
   rule_map_.emplace("ExclaimWordsRegex",
                     std::make_unique<Rule>(Rule("(?<=\\p{Z}|\\A)(" + exclaim_words + ")(?=\\p{Z}|\\Z)")));
 
+  // add newline in between if quotes end  sentence
+  rule_map_.emplace("QuotesEndSentence",
+                    std::make_unique<Rule>(Rule(u8"([.?][\'\"’”]\\p{Zs})(\\p{Lu})","\\1\n\\2" )));
+
   // Rubular: http://rubular.com/r/2YFrKWQUYi
   rule_map_.emplace("BetweenNeutralQuotes",
                     std::make_unique<Rule>(Rule("(?<=\\p{Z}|\\A)((?<nquote>['\"])([^'\"]|'\\p{L})*\\k<nquote>)")));
@@ -240,9 +245,6 @@ void Rules::SetupRules(){
 
   rule_map_.emplace("BetweenSlantedDoubleQuotes",
                     std::make_unique<Rule>(Rule(u8"(“[^”]*”)")));
-
-  rule_map_.emplace("QuotesEndSentence",
-                    std::make_unique<Rule>(Rule(u8"((?:"+eos_punct_repl+")[\'\"’”] S)")));
 
 
   rule_map_.emplace("BetweenSquareBrackets",
@@ -285,7 +287,7 @@ void Rules::ApplyNumberReplacements(std::string &text) {
 // function to replace EOS punctuations within certain sets of punctuations like [], "" etc.
 void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
   ApplyReplaceWithinMatch(text, "ExclaimWordsRegex", "!", "&ᓴ&");
-
+  ApplyReplace(text, "QuotesEndSentence");
   ApplyReplaceWithinMatch(text, "BetweenNeutralQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenSlantedSingleQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenSlantedDoubleQuotes", punct_replacements);
@@ -295,7 +297,6 @@ void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
   ApplyReplaceWithinMatch(text, "BetweenArrowQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenBlockQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenDoubleBlockQuotes", punct_replacements);
-  ApplyReplaceWithinMatch(text, "QuotesEndSentence", punct_replacements, true);
   // TODO: SKIPPED: between em-dashes?
 }
 
