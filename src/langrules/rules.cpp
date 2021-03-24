@@ -45,7 +45,7 @@ void Rule::Replace(std::string &text) {
 Rules::Rules() {
 
   // Constants
-  eos_punct = u8"[。．\\.！\\!\\?？]";
+  eos_punct = u8"。．\\.！\\!\\?？";
 
 
   prepositive_abbrev =
@@ -88,7 +88,7 @@ Rules::Rules() {
 };
 
 void Rules::SetupRules(){
-  eos = eos_punct + "|\\n|\\r|\\Z";
+  eos = "["+eos_punct + "]|\\n|\\r|\\Z";
 
   // TODO: make rules() function ot invoked to create all rules with the set of variables
 
@@ -251,9 +251,14 @@ void Rules::SetupRules(){
   rule_map_.emplace("BetweenDoubleBlockQuotes",
                     std::make_unique<Rule>(Rule(u8"(『[^』]*』)")));
 
-
+  //rule_map_.emplace("NewLineRegex",
+  //             std::make_unique<Rule>(Rule(u8"(.*?(?:(?:\\n\\p{Z}*)|(?:" + eos_punct +  "\\p{Z}*))+)", Options().set_multiline(true) )));
   rule_map_.emplace("NewLineRegex",
-               std::make_unique<Rule>(Rule(u8"(.*?(?:(?:\\n\\p{Z}*)|(?:" + eos_punct +  "\\p{Z}*))+)", Options().set_multiline(true) )));
+               std::make_unique<Rule>(Rule(u8"([^"+eos_punct+"]+(?:(?:\\n\\p{Z}*)|(?:["+eos_punct+"\\n]\\p{Zs}*)|$)+)", Options().set_multiline(true) )));
+  //rule_map_.emplace("NewLineRegex", std::make_unique<Rule>(Rule(u8"(.*(?:(?:\\n\\p{Zs}*)|(?:" + eos_punct +  "\\p{Zs}*)+)", Options().set_multiline(true) )));
+  //rule_map_.emplace("NewLineRegex", std::make_unique<Rule>(Rule(u8"(.+(?:(?:"+eos+"\\p{Zs}*)+|$))", Options().set_multiline(true) )));
+  //rule_map_.emplace("NewLineRegex", std::make_unique<Rule>(Rule(u8"(.+(?:(?:\\.\\p{Zs}*)+|$))", Options().set_multiline(true) )));
+
 }
 // Rule functions which can be overridden in specific language classes
 void Rules::ApplyAbbreviationReplacements(std::string &text) {
