@@ -231,7 +231,7 @@ void Rules::SetupRules(){
                     std::make_unique<Rule>(Rule("(?<=\\p{Z}|\\A)(" + exclaim_words + ")(?=\\p{Z}|\\Z)")));
 
   // add newline in between if quotes end  sentence
-  rule_map_.emplace("QuotesEndSentence",
+  rule_map_.emplace("QuoteEndSentence",
                     std::make_unique<Rule>(Rule(u8"([.?][\'\"’”]\\p{Zs})(\\p{Lu})","\\1\n\\2" )));
 
   // Rubular: http://rubular.com/r/2YFrKWQUYi
@@ -264,7 +264,7 @@ void Rules::SetupRules(){
                     std::make_unique<Rule>(Rule(u8"(『[^』]*』)")));
 
 rule_map_.emplace("NewLineRegex",
-               std::make_unique<Rule>(Rule(u8"(.+?(?:\\Z|["+eos_punct+"\\n\\r]\\p{Zs}*)+)", Options().set_multiline(true) )));
+               std::make_unique<Rule>(Rule(u8"(.+?(?:(?:\n)|\\Z|(?:["+eos_punct+"]\\p{Zs}*)+))", Options().set_multiline(true) )));
 
 }
 // Rule functions which can be overridden in specific language classes
@@ -287,7 +287,7 @@ void Rules::ApplyNumberReplacements(std::string &text) {
 // function to replace EOS punctuations within certain sets of punctuations like [], "" etc.
 void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
   ApplyReplaceWithinMatch(text, "ExclaimWordsRegex", "!", "&ᓴ&");
-  ApplyReplace(text, "QuotesEndSentence");
+  ApplyReplace(text, "QuoteEndSentence");
   ApplyReplaceWithinMatch(text, "BetweenNeutralQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenSlantedSingleQuotes", punct_replacements);
   ApplyReplaceWithinMatch(text, "BetweenSlantedDoubleQuotes", punct_replacements);
@@ -328,12 +328,14 @@ void Rules::ApplyRules(std::string &text) {
 
 // substitute the punctuations  back
 void Rules::PostProcess(std::string &text){
+    Utils::RTrim(text);
     std::string punct, subst;
     for (auto punct_subst : punct_replacements){
         punct = punct_subst.first;
         subst = punct_subst.second;
         Utils::FindAndReplaceAll(text, subst, punct);
     }
+
 }
 
 // create rules map for leach language.
