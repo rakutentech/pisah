@@ -30,7 +30,6 @@ class Rules {
 public:
   std::string eos_punct;
   std::string eos_punct_repl;
-  std::string eos;
   std::string prepositive_abbrev;
   std::string number_abbrev;
   std::string abbrev;
