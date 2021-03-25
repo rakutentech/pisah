@@ -102,7 +102,7 @@ void Rules::SetupRules(){
   // TODO: make rules() function ot invoked to create all rules with the set of variables
 
   // Replacement Regexes
-  rule_map_.emplace("NewlineRule", std::make_unique<Rule>(Rule("\r", "\n")));
+  // rule_map_.emplace("NewlineRule", std::make_unique<Rule>(Rule("\r", "\n")));
 
   // ABBREVIATION RULES
   // http://rubular.com/r/yqa4Rit8EY --> Ex: Jr.'s --> Jr∯'s
@@ -180,7 +180,7 @@ void Rules::SetupRules(){
   // (covers starting of the line and upto three digits)
   rule_map_.emplace("NewLineNumberPeriodSpaceLetterRule",
                     std::make_unique<Rule>(Rule(
-                        "((?:\\n|\\A)\\d{1,3})\\.(\\p{Z}*\\P{Z})", u8"\\1∯\\2")));
+                        "((?:\\R|\\A)\\d{1,3})\\.(\\p{Z}*\\P{Z})", u8"\\1∯\\2")));
 
   // ADDITIONAL RULES
   // https://regex101.com/r/i4YWZI/2/ alphanum period alphanum
@@ -265,7 +265,7 @@ void Rules::SetupRules(){
                     std::make_unique<Rule>(Rule(u8"(『[^』]*』)")));
 
 rule_map_.emplace("NewLineRegex",
-               std::make_unique<Rule>(Rule(u8"(.+?(?:╿|\\Z|(?:["+eos_punct+"\\n]\\p{Zs}*)+))", Options().set_multiline(true) )));
+               std::make_unique<Rule>(Rule(u8"(.+?(?:╿|\\Z|(?:(?:["+eos_punct+"]|\\R)\\p{Zs}*)+))", Options().set_multiline(true) )));
 
 }
 // Rule functions which can be overridden in specific language classes
@@ -304,7 +304,7 @@ void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
 // apply replacement rules
 void Rules::ApplyRules(std::string &text) {
 
-  ApplyReplace(text, "NewlineRule");
+  //ApplyReplace(text, "NewlineRule");
 
   // TODO: list replacements are not done. special case handling
   //(i), (ii), etc. and 1. 2. 3. list etc.
