@@ -30,14 +30,6 @@ std::vector<std::string> Processor::process() {
   const auto before = std::chrono::system_clock::now();
   rules_->ApplyRules(text_);
 
-  // -- stub --
-  //pcrecpp::StringPiece text_sp = Utils::ToStringPiece(text_);
-
-  // while (rules_->GetRuleRegex("NewLineRegex").FindAndConsume(&text_sp, &sent)) {
-  //   //std::string sent_str = sent.as_string();
-  //   std::cerr << "PIECE" << sent << std::endl;
-  //   str_list.push_back(sent);
-  //   }
   str_list = Utils::FindAndConsumeAll(text_, rules_->GetRuleRegex("NewLineRegex"));
 
   for (auto &sent : str_list){
