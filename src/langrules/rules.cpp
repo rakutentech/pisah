@@ -88,15 +88,16 @@ Rules::Rules() {
 };
 
 void Rules::SetupRules(){
-  eos = "["+eos_punct + "]|\\n|\\r|\\Z";
 
-  eos_punct_repl = "";
-  for (auto p: punct_replacements){
-    if (eos_punct_repl != ""){
-      eos_punct_repl += "|";
-    }
-     eos_punct_repl += p.second;
-  }
+  // Uncomment if you want reverse replacement for any rule
+  // eos_punct_repl = "";
+  // for (auto p: punct_replacements){
+  //   if (eos_punct_repl != ""){
+  //     eos_punct_repl += "|";
+  //   }
+  //    eos_punct_repl += p.second;
+  // }
+
 
   // TODO: make rules() function ot invoked to create all rules with the set of variables
 
@@ -107,7 +108,7 @@ void Rules::SetupRules(){
   // http://rubular.com/r/yqa4Rit8EY --> Ex: Jr.'s --> Jr∯'s
   rule_map_.emplace(
       "PossessiveAbbreviationRule",
-      std::make_unique<Rule>(Rule("\\.(?='s(\\p{Z}|" + eos + "))", u8"∯")));
+      std::make_unique<Rule>(Rule("\\.(?='s(\\p{Z}|[" + eos_punct + "]|\\Z))", u8"∯")));
 
   // http://rubular.com/r/e3H6kwnr6H --> Example: ^Q. This --> Q∯ This
   rule_map_.emplace(
@@ -123,7 +124,7 @@ void Rules::SetupRules(){
   // the string,  followed by uppercase char, space, or ":[0-9]+"
   rule_map_.emplace(
       "PrepositiveAbbreviationRule",
-      std::make_unique<Rule>(Rule("((?:\\A|\\p{Z})(?:" + prepositive_abbrev +
+      std::make_unique<Rule>(Rule("((?:\\A|\\p{Z}|["+eos_punct+"])(?:" + prepositive_abbrev +
                                       "))\\.((?-i)[[:upper:]]|\\p{Z}|:\\p{N}+)",
                                   u8"\\1∯\\2", Options().set_caseless(true))));
 
@@ -140,7 +141,7 @@ void Rules::SetupRules(){
   rule_map_.emplace(
       "AbbreviationRule",
       std::make_unique<Rule>(Rule(
-          "((?:\\A|\\p{Z})(?:" + abbrev +
+          "((?:\\A|\\p{Z}|["+eos_punct+"]})(?:" + abbrev +
               "))\\.((\\.|\\:|-|\\?|\\,)|(\\p{Z}(\\p{Ll}|I\\p{Z}|I'm|I'll|\\d|\\()))",
           u8"\\1∯\\2", Options().set_caseless(true))));
 
@@ -232,7 +233,7 @@ void Rules::SetupRules(){
 
   // add newline in between if quotes end  sentence
   rule_map_.emplace("QuoteEndSentence",
-                    std::make_unique<Rule>(Rule(u8"([.?][\'\"’”]\\p{Zs})(\\p{Lu})","\\1\n\\2" )));
+                    std::make_unique<Rule>(Rule(u8"([.?][\'\"’”]\\p{Zs})(\\p{Lu})","\\1╿\\2" )));
 
   // Rubular: http://rubular.com/r/2YFrKWQUYi
   rule_map_.emplace("BetweenNeutralQuotes",
@@ -264,7 +265,7 @@ void Rules::SetupRules(){
                     std::make_unique<Rule>(Rule(u8"(『[^』]*』)")));
 
 rule_map_.emplace("NewLineRegex",
-               std::make_unique<Rule>(Rule(u8"(.+?(?:(?:\n)|\\Z|(?:["+eos_punct+"]\\p{Zs}*)+))", Options().set_multiline(true) )));
+               std::make_unique<Rule>(Rule(u8"(.+?(?:╿|\\Z|(?:["+eos_punct+"\\n]\\p{Zs}*)+))", Options().set_multiline(true) )));
 
 }
 // Rule functions which can be overridden in specific language classes
@@ -328,13 +329,14 @@ void Rules::ApplyRules(std::string &text) {
 
 // substitute the punctuations  back
 void Rules::PostProcess(std::string &text){
-    Utils::RTrim(text);
-    std::string punct, subst;
+    std::string orig, repl;
     for (auto punct_subst : punct_replacements){
-        punct = punct_subst.first;
-        subst = punct_subst.second;
-        Utils::FindAndReplaceAll(text, subst, punct);
+        orig = punct_subst.first;
+        repl = punct_subst.second;
+        Utils::FindAndReplaceAll(text, repl, orig);
     }
+    Utils::FindAndReplaceAll(text, u8"╿", "");
+
 
 }
 
