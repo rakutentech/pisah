@@ -2,10 +2,10 @@
 #include <string>
 #include <vector>
 
-#include "pisah.hpp"
-#include "utils.hpp"
 #include "doctest.h"
 
+#include "test_utils.hpp"
+#include "pisah.hpp"
 
 TEST_SUITE_BEGIN("English Tests");
 
@@ -227,26 +227,23 @@ TEST_CASE("Golden Rule Tests") {
 
                 };
 
+    run_tests(testcases, pisah);
 
-    for (auto testcase : testcases)
-    {
-            auto expected = testcase.second;
-            std::vector<std::string> output = pisah.Segment(testcase.first);
-            std::string s;
-            s += "\nINPUT:\t" + testcase.first;
-            s += "\nOUTPUT:\t" ;
-            for(int i = 0; i < output.size(); i++) {
-                Utils::RTrim(output[i]);
-                s += output[i] + " ||| ";
-            }
-            s += "\nEXPECT:\t";
-            for(int i = 0; i < expected.size(); i++){
-                Utils::RTrim(expected[i]);
-                s += expected[i] + " ||| ";
-            }
-            CHECK_MESSAGE(output == expected, s);
-        // && std::equal(output.begin(), output.end(), expected.begin()));
-    }
+}
 
+TEST_CASE("Custom Tests") {
+    Pisah pisah("en");
+    std::vector<std::pair<std::string, std::vector<std::string>>> testcases =
+
+                {//1
+                {"..\n.",
+                std::vector<std::string>{ "..\n." }
+                },
+                //2
+                {"\n",
+                std::vector<std::string>{  }
+                }
+                };
+    run_tests(testcases, pisah);
 
 }
