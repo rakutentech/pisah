@@ -102,7 +102,8 @@ void Rules::SetupRules(){
   // TODO: make rules() function ot invoked to create all rules with the set of variables
 
   // Replacement Regexes
-  // rule_map_.emplace("NewlineRule", std::make_unique<Rule>(Rule("\r", "\n")));
+     rule_map_.emplace("NewLineDosRule", std::make_unique<Rule>(Rule("\\r\\n", "\n")));
+     rule_map_.emplace("NewLineMacRule", std::make_unique<Rule>(Rule("\\r", "\n")));
 
   // ABBREVIATION RULES
   // http://rubular.com/r/yqa4Rit8EY --> Ex: Jr.'s --> Jr∯'s
@@ -304,7 +305,7 @@ void Rules::ApplyBetweenPunctuationReplacements(std::string &text){
 // apply replacement rules
 void Rules::ApplyRules(std::string &text) {
 
-  //ApplyReplace(text, "NewlineRule");
+  ApplyReplace(text, "NewLineDosRule", "NewLineMacRule");
 
   // TODO: list replacements are not done. special case handling
   //(i), (ii), etc. and 1. 2. 3. list etc.
