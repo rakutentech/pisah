@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 
+#ifndef PISAH_H
+#define PISAH_H
+
 class Pisah {
 private:
   std::string lang_;
@@ -13,3 +16,5 @@ public:
   std::vector<std::string> Segment(std::string text);
   bool debug_;
 };
+
+#endif
