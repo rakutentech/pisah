@@ -1,4 +1,4 @@
-## Pisah
+# Pisah
 
 Pisah (translates to "separate" in Malay) is a tool for splitting a natural language document into sentences.
 Currently Pisah supports only English.
