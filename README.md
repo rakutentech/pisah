@@ -1,7 +1,7 @@
 # Pisah
 
 Pisah (translates to "separate" in Malay) is a tool for splitting a natural language document into sentences.
-Currently Pisah supports only English.
+Currently Pisah supports only English. More languages will be supported in near future.
 
 The library is mostly based on:
     * Pragmatic Sentence Segmenter (Ruby) (https://github.com/diasks2/pragmatic_segmenter)
@@ -23,3 +23,4 @@ make -j
 echo "How are you, Mr. John? It has been so long since we talked." | ./pisah 
 
 ```
+
