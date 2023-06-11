@@ -4,6 +4,7 @@ Pisah (translates to "separate" in Malay) is a tool for splitting a natural lang
 Currently Pisah supports only English.
 
 The library is mostly based on:
+
     * Pragmatic Sentence Segmenter (Ruby) (https://github.com/diasks2/pragmatic_segmenter)
     * PySBD (Python): (https://github.com/nipunsadvilkar/pySBD/)
 
